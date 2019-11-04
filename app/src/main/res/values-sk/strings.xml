@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">Money Bible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\nTu povedal Boh: \"Buď svetlo!\" a bolo svetlo.</string>
   <string name="help_text">Stlač kláves MENU pre možnosti \n\n.
@@ -27,7 +27,7 @@ Dlhé stlačenie verša otvorí ponuku pre možnosti daného textu.
 Dlhé stlačenie dokumentu v zozname dokumentov otvorí ponuku jeho vymazania alebo bližších informácií.
 Dlhé stlačenie tlačíta \"Späť\" otvorí Históriu.</string>
   <string name="version_text">Verzia %s</string>
-  <string name="no_sdcard_error">Prosím, vložte SD kartu a spustite And Bible ešte raz.</string>
+  <string name="no_sdcard_error">Prosím, vložte SD kartu a spustite Money Bible ešte raz.</string>
   <!--Main menu-->
   <string name="menu">Ponuka</string>
   <string name="chooseBook">Dokument</string>
@@ -170,7 +170,7 @@ Dlhé stlačenie tlačíta \"Späť\" otvorí Históriu.</string>
   <string name="notes">Poznámky pod čiarou a odkazy</string>
   <string name="copy">Kopírovať</string>
   <string name="share_verse">Zdieľať</string>
-  <string name="share_verse_subject">Verš z Biblie (pomocou programu And Bible) je s vami zdieľaný...</string>
+  <string name="share_verse_subject">Verš z Biblie (pomocou programu Money Bible) je s vami zdieľaný...</string>
   <string name="compare_translations">Porovnať preklady</string>
   <!--Link context menu-->
   <string name="open_link_in_this_window">Otvoriť odkaz tu</string>

@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">Money Bible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\n\"Mungu akasema, Iwe nuru; ikawa nuru.\"\nMwanzo 1:3</string>
   <string name="version_text">Toleo %s</string>
-  <string name="no_sdcard_error">Tafadhali ingiza SD Kadi ukawashe And Bible tena.</string>
+  <string name="no_sdcard_error">Tafadhali ingiza SD Kadi ukawashe Money Bible tena.</string>
   <!--Main menu-->
   <string name="chooseBook">makala</string>
   <string name="selectPassage">Fungo</string>
@@ -134,7 +134,7 @@
   <string name="notes">Tiniwayo na marejeo</string>
   <string name="copy">nakilisha</string>
   <string name="share_verse">Sambaza...</string>
-  <string name="share_verse_subject">Umetumiwa mstari wa Biblia kwa kutumia And Bible</string>
+  <string name="share_verse_subject">Umetumiwa mstari wa Biblia kwa kutumia Money Bible</string>
   <string name="compare_translations">Linganisha tafsiri</string>
   <!--Link context menu-->
   <string name="open_link_in_this_window">Fungua rejeo hapa</string>

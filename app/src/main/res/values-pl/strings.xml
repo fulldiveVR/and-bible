@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">Money Bible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\n\"I rzekł Bóg: \'Niech stanie się światłość.\' I stała się światłość.\"\nRodzaju 1:3</string>
   <string name="version_text">Wersja %s</string>
-  <string name="no_sdcard_error">Proszę włożyć kartę SD i ponownie uruchomić And Bible.</string>
+  <string name="no_sdcard_error">Proszę włożyć kartę SD i ponownie uruchomić Money Bible.</string>
   <!--Main menu-->
   <string name="chooseBook">Dokument</string>
   <string name="selectPassage">Fragment</string>
@@ -133,7 +133,7 @@
   <string name="notes">Przypisy i odnośniki</string>
   <string name="copy">Skopiuj</string>
   <string name="share_verse">Udostępnij …</string>
-  <string name="share_verse_subject">Ten werset został przesłany z programu And Bible</string>
+  <string name="share_verse_subject">Ten werset został przesłany z programu Money Bible</string>
   <string name="compare_translations">Porównaj tłumaczenia</string>
   <!--Link context menu-->
   <string name="open_link_in_this_window">Otwórz odnośnik tutaj</string>

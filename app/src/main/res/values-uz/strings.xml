@@ -12,7 +12,7 @@
   <string name="help_search_title">Qidiruv</string>
   <string name="help_contextmenus_title">Konteks Menyusi</string>
   <string name="version_text">Versiya %s</string>
-  <string name="no_sdcard_error">Fleshkani soling va And Bibleni qayta boshlang</string>
+  <string name="no_sdcard_error">Fleshkani soling va Money Bibleni qayta boshlang</string>
   <!--Main menu-->
   <string name="menu">Menyu</string>
   <string name="chooseBook">Dokument</string>
@@ -148,7 +148,7 @@
   <string name="notes">Snoska va Ssilkalar</string>
   <string name="copy">Nusxa</string>
   <string name="share_verse">Boshqalar bilan bo\'lishing</string>
-  <string name="share_verse_subject">And Bible orqali Muqaddas Kitob oyatini siz bilan bo\'lishdi</string>
+  <string name="share_verse_subject">Money Bible orqali Muqaddas Kitob oyatini siz bilan bo\'lishdi</string>
   <string name="compare_translations">Tarjimalarni taqqosla</string>
   <!--Link context menu-->
   <string name="open_link_in_this_window">Linkni bu yerda oching</string>
