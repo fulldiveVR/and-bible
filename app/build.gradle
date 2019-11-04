@@ -13,6 +13,11 @@ def getGitHash = { ->
     return stdout.toString().trim()
 }
 
+// Load keystore properties
+def keystorePropertiesFile = file("../../keys/keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     compileSdkVersion 28
     buildToolsVersion "28.0.3"
@@ -23,7 +28,7 @@ android {
 
     /** these config values override those in AndroidManifest.xml.  Can also set versionCode and versionName */
     defaultConfig {
-        applicationId "net.bible.android.activity"
+        applicationId "com.fulldive.moneybible"
         minSdkVersion 19
         targetSdkVersion 28
 		vectorDrawables.useSupportLibrary = true
@@ -32,10 +37,20 @@ android {
         buildConfigField "String", "BuildDate", "\"${new Date().format('dd/MM/YY HH:mm:ss')}\""
     }
 
+    signingConfigs {
+        releaseConfig {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.releaseConfig
         }
 //		debug {
 //			minifyEnabled true
