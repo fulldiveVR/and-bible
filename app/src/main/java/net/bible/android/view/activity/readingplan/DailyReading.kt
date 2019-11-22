@@ -78,12 +78,10 @@ class DailyReading : CustomTitlebarActivityBase(R.menu.reading_plan) {
             mDay = readingPlanControl.currentPlanDay
             val extras = intent.extras
             if (extras != null) {
-                if (extras.containsKey(PLAN)) {
-                    readingPlanControl.setReadingPlan(extras.getString(PLAN))
-                }
-                if (extras.containsKey(DAY)) {
-                    mDay = extras.getInt(DAY, mDay)
-                }
+
+                val plan = extras.getString(PLAN)
+                if(plan != null) readingPlanControl.setReadingPlan(plan)
+                mDay = extras.getInt(DAY, mDay)
             }
 
             // get readings for chosen day
@@ -101,7 +99,7 @@ class DailyReading : CustomTitlebarActivityBase(R.menu.reading_plan) {
             BookName.setFullBookName(!CommonUtils.isPortrait)
 
             val layout = findViewById<View>(R.id.reading_container) as TableLayout
-            for (i in 0 until mReadings.numReadings) {
+            for (i in 1..mReadings.numReadings) {
                 val child = layoutInflater.inflate(R.layout.reading_plan_one_reading, null)
 
                 // Ticks
@@ -131,7 +129,7 @@ class DailyReading : CustomTitlebarActivityBase(R.menu.reading_plan) {
                 val speakBtn = child.findViewById<View>(R.id.speakButton) as Button
                 speakBtn.setOnClickListener { onSpeak(i) }
 
-                layout.addView(child, i)
+                layout.addView(child, i-1)
             }
 
             // restore full book name setting
@@ -170,7 +168,7 @@ class DailyReading : CustomTitlebarActivityBase(R.menu.reading_plan) {
 
     /** user pressed read button by 1 reading
      */
-    fun onRead(readingNo: Int) {
+    private fun onRead(readingNo: Int) {
         Log.i(TAG, "Read $readingNo")
         val readingKey = mReadings.getReadingKey(readingNo)
         readingPlanControl.read(mDay, readingNo, readingKey)
@@ -180,7 +178,7 @@ class DailyReading : CustomTitlebarActivityBase(R.menu.reading_plan) {
 
     /** user pressed speak button by 1 reading
      */
-    fun onSpeak(readingNo: Int) {
+    private fun onSpeak(readingNo: Int) {
         Log.i(TAG, "Speak $readingNo")
         val readingKey = mReadings.getReadingKey(readingNo)
         readingPlanControl.speak(mDay, readingNo, readingKey)
@@ -190,9 +188,9 @@ class DailyReading : CustomTitlebarActivityBase(R.menu.reading_plan) {
 
     /** user pressed speak button by All
      */
-    fun onSpeakAll(view: View?) {
+    private fun onSpeakAll(view: View?) {
         Log.i(TAG, "Speak all")
-        readingPlanControl.speak(mDay, mReadings.readingKeys)
+        readingPlanControl.speak(mDay, mReadings.getReadingKeys)
 
         updateTicksAndDone()
     }
@@ -245,8 +243,8 @@ class DailyReading : CustomTitlebarActivityBase(R.menu.reading_plan) {
     override fun getIntentForHistoryList(): Intent {
         val intent = intent
 
-        intent.putExtra(DailyReading.PLAN, mReadings.readingPlanInfo.code)
-        intent.putExtra(DailyReading.DAY, mReadings.day)
+        intent.putExtra(PLAN, mReadings.readingPlanInfo.planCode)
+        intent.putExtra(DAY, mReadings.day)
 
         return intent
     }
@@ -274,7 +272,7 @@ class DailyReading : CustomTitlebarActivityBase(R.menu.reading_plan) {
 
         for (i in mImageTickList.indices) {
             val imageTick = mImageTickList[i]
-            if (status.isRead(i)) {
+            if (status.isRead(i+1)) {
                 imageTick.setImageResource(R.drawable.btn_check_buttonless_on)
             } else {
                 imageTick.setImageResource(R.drawable.btn_check_buttonless_off)
@@ -327,8 +325,11 @@ class DailyReading : CustomTitlebarActivityBase(R.menu.reading_plan) {
 
             }
             R.id.reset -> {
-                readingPlanControl.reset(mReadings.readingPlanInfo)
-                finish()
+                Dialogs.getInstance().showMsg(R.string.reset_plan_question, true)
+                {
+                    readingPlanControl.reset(mReadings.readingPlanInfo)
+                    finish()
+                }
                 isHandled = true
             }
             R.id.setStartDate -> {

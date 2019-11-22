@@ -19,7 +19,6 @@
 package net.bible.android.control
 
 import android.util.Log
-
 import net.bible.android.control.page.ChapterVerse
 import net.bible.android.control.page.UpdateTextTask
 import net.bible.android.control.page.window.Window
@@ -27,9 +26,7 @@ import net.bible.android.control.page.window.WindowControl
 import net.bible.android.view.activity.MainBibleActivityScope
 import net.bible.android.view.activity.page.screen.DocumentViewManager
 
-import org.crosswire.jsword.book.Book
 import org.crosswire.jsword.book.BookCategory
-import org.crosswire.jsword.passage.Key
 import org.crosswire.jsword.passage.VerseRange
 
 import javax.inject.Inject
@@ -40,7 +37,7 @@ import javax.inject.Inject
  */
 @MainBibleActivityScope
 class BibleContentManager @Inject
-constructor(private val documentViewManager: DocumentViewManager?, private val windowControl: WindowControl) {
+constructor(private val documentViewManager: DocumentViewManager, private val windowControl: WindowControl) {
     init {
         PassageChangeMediator.getInstance().setBibleContentManager(this)
     }
@@ -66,37 +63,15 @@ constructor(private val documentViewManager: DocumentViewManager?, private val w
             && prevVerse.start?.book == book
             && prevVerse.start?.chapter == verse.chapter)
         {
-            window.bibleView.scrollOrJumpToVerseOnUIThread(ChapterVerse(verse.chapter, verse.verse))
+            window.bibleView?.scrollOrJumpToVerseOnUIThread(ChapterVerse(verse.chapter, verse.verse))
             PassageChangeMediator.getInstance().contentChangeFinished()
         }
         else {
-            UpdateMainTextTask().execute(window)
+            window.updateText(documentViewManager)
         }
 
         window.displayedBook = document
         window.displayedKey = key
-    }
-
-    private inner class UpdateMainTextTask : UpdateTextTask() {
-        override fun onPreExecute() {
-            super.onPreExecute()
-            PassageChangeMediator.getInstance().contentChangeStarted()
-        }
-
-        override fun onPostExecute(htmlFromDoInBackground: String) {
-            super.onPostExecute(htmlFromDoInBackground)
-            PassageChangeMediator.getInstance().contentChangeFinished()
-        }
-
-        /** callback from base class when result is ready  */
-        override fun showText(text: String, window: Window, chapterVerse: ChapterVerse, yOffsetRatio: Float) {
-            if (documentViewManager != null) {
-                val view = documentViewManager.getDocumentView(window)
-                view.show(text, chapterVerse, yOffsetRatio)
-            } else {
-                Log.w(TAG, "Document view not yet registered")
-            }
-        }
     }
 
     companion object {

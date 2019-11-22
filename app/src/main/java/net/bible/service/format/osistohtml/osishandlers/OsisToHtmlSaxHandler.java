@@ -187,22 +187,17 @@ public class OsisToHtmlSaxHandler extends OsisSaxHandler {
 	public void startDocument()  {
 		// if not fragment then add head section
 		if (!parameters.isAsFragment()) {
-			String jQueryjs = "\n<script type='text/javascript' src='file:///android_asset/web/jquery-2.2.4.js'></script>\n" +
-					"<script type='text/javascript' src='file:///android_asset/web/jquery.longpress.js'></script>\n" +
-					"<script type='text/javascript' src='file:///android_asset/web/jquery.nearest.min.1.4.0.js'></script>\n";
-			String jsTag = "\n<script type='text/javascript' src='file:///android_asset/web/script.js'></script>\n" +
-					"<script type='text/javascript' src='file:///android_asset/web/infinite-scroll.js'></script>\n";
+			String jsTag = "\n<script type='text/javascript' src='file:///android_asset/web/loader.js'></script>\n";
+			//jsTag += "\n<script type='text/javascript' src='file:///android_asset/web/loader.js.map'></script>\n";
 			String styleSheetTags = parameters.getCssStylesheets();
 			String customFontStyle = FontControl.getInstance().getHtmlFontStyle(parameters.getFont(), parameters.getCssClassForCustomFont());
 			write("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\"> "
 					+ "<html xmlns='http://www.w3.org/1999/xhtml' lang='" + parameters.getLanguageCode() + "' dir='" + getDirection() + "'><head>"
 					+ styleSheetTags + "\n"
 					+ customFontStyle
-					+ jQueryjs
 					+ jsTag
 					+ "<meta charset='utf-8'/>"
-					+ "</head>"
-					+ "<body onscroll='jsonscroll()'><div id='start'></div>");
+					+ "</head><body><div id='start'></div><div id='content' style='visibility: hidden;'>");
 		}
 
 		// force rtl for rtl languages - rtl support on Android is poor but
@@ -244,7 +239,7 @@ public class OsisToHtmlSaxHandler extends OsisSaxHandler {
 
 		// only put top/bottom insert positions in main/non-fragment page
 		if (!parameters.isAsFragment()) {
-			write("<div id='bottomOfBibleText'></div></body></html>");
+			write("<div id='bottomOfBibleText'></div></div></body></html>");
 		}
 	}
 

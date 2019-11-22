@@ -56,7 +56,6 @@ import net.bible.android.view.activity.page.BibleView
 import net.bible.android.view.activity.page.BibleViewFactory
 import net.bible.android.view.activity.page.MainBibleActivity
 import net.bible.service.common.CommonUtils
-import java.lang.ref.WeakReference
 import java.util.*
 
 import javax.inject.Inject
@@ -167,10 +166,6 @@ class DocumentWebViewBuilder @Inject constructor(
                 currentWindowFrameLayout = FrameLayout(this.mainBibleActivity)
 
                 val bibleView = getCleanView(window)
-
-                // trigger recalc of verse positions in case width changes e.g. minimize/restore web view
-                bibleView.isVersePositionRecalcRequired = true
-
                 val windowWeight = max(window.windowLayout.weight, 0.1F)
                 val lp = if (isSplitHorizontally)
                     LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, windowWeight)

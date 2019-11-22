@@ -18,31 +18,36 @@
 
 package net.bible.service.history
 
-import android.app.Activity
 import android.content.Intent
 import android.util.Log
 
 import net.bible.android.control.page.window.Window
+import net.bible.android.view.activity.base.ActivityBase.Companion.STD_REQUEST_CODE
 import net.bible.android.view.activity.base.CurrentActivityHolder
+import net.bible.android.view.activity.base.IntentHelper
 
 /**
  * Any item in the History list that is not related to the main bible activity view e.g. search results etc
  *
  * @author Martin Denham [mjdenham at gmail dot com]
  */
-class IntentHistoryItem(override val description: CharSequence, private val intent: Intent, window: Window)// prevent re-add of intent to history if reverted to
+// prevent re-add of intent to history if reverted to
 //		intent.putExtra(HISTORY_INTENT, true);
-    : HistoryItemBase(window) {
+class IntentHistoryItem(
+    override val description: CharSequence,
+    private val intent: Intent,
+    window: Window
+) : HistoryItemBase(window) {
 
-    override fun equals(o: Any?): Boolean {
-        if (o == null || o !is IntentHistoryItem) {
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is IntentHistoryItem) {
             return false
         }
-        if (o === this) {
+        if (other === this) {
             return true
         }
 
-        val oihs = o as IntentHistoryItem?
+        val oihs = other as IntentHistoryItem?
         // assumes intent exists
         return intent == oihs!!.intent
     }
@@ -53,7 +58,11 @@ class IntentHistoryItem(override val description: CharSequence, private val inte
         val currentActivity = CurrentActivityHolder.getInstance().currentActivity
 
         // start activity chosen from activity
-        currentActivity.startActivity(intent)
+        currentActivity.startActivityForResult(intent, STD_REQUEST_CODE)
+    }
+
+    override fun hashCode(): Int {
+        return intent.hashCode()
     }
 
     companion object {

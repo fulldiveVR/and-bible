@@ -18,9 +18,15 @@
 
 package net.bible.android.control.page.window
 
+import android.util.Log
+import net.bible.android.control.PassageChangeMediator
+import net.bible.android.control.event.ABEventBus
+import net.bible.android.control.event.window.UpdateSecondaryWindowEvent
 import net.bible.android.control.page.CurrentPageManager
+import net.bible.android.control.page.UpdateTextTask
 import net.bible.android.control.page.window.WindowLayout.WindowState
 import net.bible.android.view.activity.page.BibleView
+import net.bible.android.view.activity.page.screen.DocumentViewManager
 import net.bible.service.common.Logger
 import org.crosswire.jsword.book.Book
 import org.crosswire.jsword.passage.Key
@@ -34,13 +40,14 @@ open class Window (
     val pageManager: CurrentPageManager,
     var screenNo: Int)
 {
-    constructor (currentPageManager: CurrentPageManager) :
+    constructor (currentPageManager: CurrentPageManager):
             this(WindowLayout(WindowState.SPLIT), currentPageManager, 0)
-    constructor(screenNo: Int, windowState: WindowState, currentPageManager: CurrentPageManager) :
+    constructor(screenNo: Int, windowState: WindowState, currentPageManager: CurrentPageManager):
             this(WindowLayout(windowState), currentPageManager, screenNo)
 
     init {
-        pageManager.windowRef = WeakReference(this)
+        @Suppress("LeakingThis")
+        pageManager.window = this
     }
 
     var displayedKey: Key? = null
@@ -105,12 +112,16 @@ open class Window (
     open val isLinksWindow: Boolean
         get() = false
 
-    lateinit var bibleView: BibleView
+    private var bibleViewRef: WeakReference<BibleView>? = null
+
+    var bibleView
+        get() = bibleViewRef?.get()
+        set(value) {
+            bibleViewRef = WeakReference(value!!)
+        }
 
     fun destroy() {
-        if(::bibleView.isInitialized) {
-            bibleView.destroy()
-        }
+        bibleViewRef?.get()?.destroy()
     }
 
     enum class WindowOperation {
@@ -133,5 +144,59 @@ open class Window (
 
     override fun toString(): String {
         return "Window [screenNo=$screenNo]"
+    }
+
+    var updateOngoing = false
+        set(value) {
+            field = value
+            Log.d(TAG, "updateOngoing set to $value")
+        }
+
+    fun updateText(documentViewManager: DocumentViewManager? = null) {
+        val stackMessage: String? = Log.getStackTraceString(Exception())
+        val updateOngoing = updateOngoing
+        val isVisible = isVisible
+
+        Log.d(TAG, "updateText, updateOngoing: $updateOngoing isVisible: $isVisible, stack: $stackMessage")
+
+        if(initialized && (updateOngoing || !isVisible)) return
+
+        this.updateOngoing = true;
+        if(documentViewManager != null) {
+            UpdateMainTextTask(documentViewManager).execute(this)
+
+        } else {
+            UpdateInactiveScreenTextTask().execute(this)
+        }
+    }
+
+    private val TAG get() = "BibleView[${screenNo}] WIN"
+}
+
+class UpdateInactiveScreenTextTask() : UpdateTextTask() {
+    /** callback from base class when result is ready  */
+    override fun showText(text: String, screenToUpdate: Window) {
+        ABEventBus.getDefault().post(
+            UpdateSecondaryWindowEvent(screenToUpdate, text, chapterVerse, yOffsetRatio));
+    }
+}
+
+
+class UpdateMainTextTask(val documentViewManager: DocumentViewManager) : UpdateTextTask() {
+
+    override fun onPreExecute() {
+        super.onPreExecute()
+        PassageChangeMediator.getInstance().contentChangeStarted()
+    }
+
+    override fun onPostExecute(htmlFromDoInBackground: String) {
+        super.onPostExecute(htmlFromDoInBackground)
+        PassageChangeMediator.getInstance().contentChangeFinished()
+    }
+
+    /** callback from base class when result is ready  */
+    override fun showText(text: String, screenToUpdate: Window) {
+        val view = documentViewManager.getDocumentView(screenToUpdate)
+        view.show(text, true)
     }
 }

@@ -44,13 +44,13 @@ class BibleJavascriptInterface(
 	private val bibleInfiniteScrollPopulator: BibleInfiniteScrollPopulator,
 	private val bibleViewRef: WeakReference<BibleView>
 ) {
-    private var notificationsEnabled = false
+    var notificationsEnabled = false
 
     private var addingContentAtTop = false
 
     private var prevCurrentChapterVerse = ChapterVerse(0, 0)
 
-	val bibleView: BibleView get() = bibleViewRef.get()!!
+	private val bibleView: BibleView get() = bibleViewRef.get()!!
 
     // Create Json Object using Facebook Data
 	@JavascriptInterface
@@ -70,11 +70,6 @@ class BibleJavascriptInterface(
 
 		return jsonObject.toString()
 	}
-
-    @JavascriptInterface
-    fun onLoad() {
-        Log.d(TAG, "onLoad from js")
-    }
 
     @JavascriptInterface
     fun onScroll(newYPos: Int) {
@@ -135,13 +130,21 @@ class BibleJavascriptInterface(
     }
 
     @JavascriptInterface
-    fun log(msg: String) {
-        Log.d(TAG, msg)
+    fun triggerJumpToOffset() {
+        Log.d(TAG, "triggerJumpToOffset!")
+        bibleView.invokeJumpToOffsetIfRequired(true)
     }
 
-    fun setNotificationsEnabled(notificationsEnabled: Boolean) {
-        this.notificationsEnabled = notificationsEnabled
+    @JavascriptInterface
+    fun getToolbarOffset(): Float {
+        return bibleView.toolbarOffset
     }
+
+    @JavascriptInterface
+    fun getCurrentChapterVerseId(): String {
+        return bibleView.getIdToJumpTo(bibleView.window.pageManager.currentBible.currentChapterVerse)
+    }
+
 
 	private val TAG get() = "BibleView[${bibleView.window.screenNo}] JSInt"
 }
