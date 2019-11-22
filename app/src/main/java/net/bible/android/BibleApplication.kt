@@ -25,10 +25,9 @@ import android.content.res.Resources
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
-
 import androidx.annotation.RequiresApi
 import androidx.multidex.MultiDexApplication
-
+import com.fulldive.eventsender.lib.EventSender
 import net.bible.android.activity.SpeakWidgetManager
 import net.bible.android.control.ApplicationComponent
 import net.bible.android.control.DaggerApplicationComponent
@@ -39,10 +38,9 @@ import net.bible.service.common.CommonUtils
 import net.bible.service.device.ProgressNotificationManager
 import net.bible.service.device.speak.TextToSpeechNotificationManager
 import net.bible.service.sword.SwordEnvironmentInitialisation
-
 import org.crosswire.common.util.Language
 import org.crosswire.jsword.bridge.BookIndexer
-import java.util.Locale
+import java.util.*
 
 
 /** Main And Bible application singleton object
@@ -100,6 +98,8 @@ open class BibleApplication : MultiDexApplication() {
 
         ttsNotificationManager = TextToSpeechNotificationManager()
         ttsWidgetManager = SpeakWidgetManager()
+
+        EventSender.Companion.getInstance(applicationContext) // initialize
     }
 
     /**
