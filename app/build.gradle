@@ -165,7 +165,7 @@ dependencies {
     implementation 'org.apache.lucene:lucene-analyzers:3.6.2'
     implementation 'de.psdev.slf4j-android-logger:slf4j-android-logger:1.0.5'
 
-    implementation "com.fulldive:eventsender:0.1.4"
+    implementation "com.fulldive:eventsender:0.1.5"
 
     // TESTS
     testImplementation 'org.robolectric:robolectric:4.3.1'
