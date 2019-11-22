@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\nGénesis 1:3\n\"En God het gesê: Laat daar lig wees, en daar was lig.\"\n \n</string>
   <string name="help_text">Druk die knoppie KIESLYS vir aksies \n\n
@@ -30,7 +30,7 @@ Druk lank op \'n dokument in die dokument selector om dit uit te vee of inligtin
 Druk lank op die Terug-knoppie om toegang tot die Geskiedenis lys te verkry.
 </string>
   <string name="version_text">Weergawe %s</string>
-  <string name="no_sdcard_error">Plaas asseblief \'n SD kaart in en begin And Bible weer.</string>
+  <string name="no_sdcard_error">Plaas asseblief \'n SD kaart in en begin MoneyBible weer.</string>
   <!--Main menu-->
   <string name="menu">Kieslys</string>
   <string name="chooseBook">Dokument</string>
@@ -60,7 +60,7 @@ Druk lank op die Terug-knoppie om toegang tot die Geskiedenis lys te verkry.
   <string name="rebuild_index">Herbou indeks</string>
   <!--Tasks-->
   <string name="progress_status">Vordering</string>
-  <string name="task_kill_warning">As And Bible lank oop is, mag hy gestop word as jy oorskakel na \'n ander program voordat And Bible klaar is.</string>
+  <string name="task_kill_warning">As MoneyBible lank oop is, mag hy gestop word as jy oorskakel na \'n ander program voordat MoneyBible klaar is.</string>
   <string name="no_tasks_running">Daar is geen take wat tans uitgevoer word nie.</string>
   <!--Search-->
   <string name="search_words_group_prompt">Vind verse</string>
@@ -173,7 +173,7 @@ Druk lank op die Terug-knoppie om toegang tot die Geskiedenis lys te verkry.
   <string name="notes">Voetnotas en verwysings</string>
   <string name="copy">kopieër</string>
   <string name="share_verse">Deel …</string>
-  <string name="share_verse_subject">\'n Bybelvers is gedeel met jou met And Bible Program</string>
+  <string name="share_verse_subject">\'n Bybelvers is gedeel met jou met MoneyBible Program</string>
   <string name="compare_translations">Vergelyk vertalings</string>
   <!--Link context menu-->
   <string name="open_link_in_this_window">Maak skakel hier oop</string>

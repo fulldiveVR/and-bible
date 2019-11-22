@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">
 \n\"И Бог каза: \'Да бъде светлина.\' И стана светлина. \"\nБитие 1:3</string>
@@ -16,7 +16,7 @@
     </string>
   <string name="help_contextmenus_title">Контекстни менюта</string>
   <string name="version_text">Версия %s</string>
-  <string name="no_sdcard_error">Вкарайте SD карта и отворете отново And Bible.</string>
+  <string name="no_sdcard_error">Вкарайте SD карта и отворете отново MoneyBible.</string>
   <!--Main menu-->
   <string name="menu">Меню</string>
   <string name="chooseBook">Ресурси</string>
@@ -46,7 +46,7 @@
   <string name="rebuild_index">Поднови индексирането</string>
   <!--Tasks-->
   <string name="progress_status">Прогрес</string>
-  <string name="task_kill_warning">Тези дълги задачи могат да бъдат прекъснати, ако затворите And Bible преди те да са приключили.</string>
+  <string name="task_kill_warning">Тези дълги задачи могат да бъдат прекъснати, ако затворите MoneyBible преди те да са приключили.</string>
   <string name="no_tasks_running">Няма други задачи.</string>
   <!--Search-->
   <string name="search_words_group_prompt">Намери стиховете.</string>

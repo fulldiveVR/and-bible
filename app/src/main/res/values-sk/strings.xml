@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">Money Bible</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\nTu povedal Boh: \"Buď svetlo!\" a bolo svetlo.</string>
   <string name="help_text">Stlač kláves MENU pre možnosti \n\n.

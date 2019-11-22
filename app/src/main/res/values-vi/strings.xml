@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">Kinh Thánh</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\n\"Đức Chúa Trời phán rằng: Phải có sự sáng; thì có sự sáng.\"\nSáng thế ký 1:3</string>
   <string name="version_text">Phiên bản %s</string>

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">Money Bible</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">
 \n\"Gud sade: \'Varde ljus!\' Och det blev ljus.\"\n1 Mos 1:3</string>

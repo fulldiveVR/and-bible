@@ -133,7 +133,7 @@
   <string name="notes">Allmärkused ja viited</string>
   <string name="copy">Kopeeri</string>
   <string name="share_verse">Jaga …</string>
-  <string name="share_verse_subject">Sinuga on jagatud piiblisalmi kasutades And Bible\'t</string>
+  <string name="share_verse_subject">Sinuga on jagatud piiblisalmi kasutades MoneyBible\'t</string>
   <string name="compare_translations">Võrdle tõlkeid</string>
   <!--Link context menu-->
   <string name="open_link_in_this_window">Ava link siin</string>

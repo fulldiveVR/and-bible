@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\n\"I řekl Bůh: Budiž světlo! A bylo světlo.\"\nGenesis 1:3</string>
   <string name="help_text">Akce vyvoláte stisknutím tlačítka MENU\n\n
@@ -32,7 +32,7 @@
         Dlouhým stiskem tlačítka Zpět je možno přistupovat k seznamu s historií.
     </string>
   <string name="version_text">Verze %s</string>
-  <string name="no_sdcard_error">Prosím vložte SD kartu a spusťte And Bible znovu.</string>
+  <string name="no_sdcard_error">Prosím vložte SD kartu a spusťte MoneyBible znovu.</string>
   <!--Main menu-->
   <string name="menu">Menu</string>
   <string name="chooseBook">Dokument</string>
@@ -175,7 +175,7 @@
   <string name="notes">Poznámky a odkazy</string>
   <string name="copy">Kopírovat</string>
   <string name="share_verse">Sdílet …</string>
-  <string name="share_verse_subject">Biblický verš zaslán z aplikace And Bible</string>
+  <string name="share_verse_subject">Biblický verš zaslán z aplikace MoneyBible</string>
   <string name="compare_translations">Porovnat překlady</string>
   <!--Link context menu-->
   <string name="open_link_in_this_window">Otevřít odkaz zde</string>

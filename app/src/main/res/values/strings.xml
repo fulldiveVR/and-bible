@@ -6,7 +6,7 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
  @author Martin Denham [mjdenham at gmail dot com]
 -->
 <resources>
-    <string name="app_name">And Bible</string>
+    <string name="app_name">MoneyBible</string>
 
     <!-- Startup & Help -->
     <string name="splash_top_text">\n\"And God said, \'Let there be light,\' and there was light.\"\nGenesis 1:3</string>
@@ -44,7 +44,7 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     </string>
 
     <string name="version_text">Version %s</string>
-    <string name="no_sdcard_error">Please insert an SD card and start And Bible again.</string>
+    <string name="no_sdcard_error">Please insert an SD card and start MoneyBible again.</string>
 
     <!-- Main menu -->
     <string name="menu">Menu</string>
@@ -245,7 +245,7 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="notes">Footnotes and references</string>
     <string name="copy">Copy</string>
     <string name="share_verse">Share …</string>
-    <string name="share_verse_subject">A Bible verse has been shared with you using And Bible</string>
+    <string name="share_verse_subject">A Bible verse has been shared with you using MoneyBible</string>
     <string name="compare_translations">Compare translations</string>
 
     <!-- Link context menu -->
@@ -420,8 +420,8 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="restore_success">My Notes and Bookmarks restored successfully</string>
     <string name="error_no_backup_file">A backup file could not be found</string>
 
-    <string name="backup_email_subject">And Bible database backup</string>
-    <string name="backup_email_message">Your And Bible database containing bookmarks and notes is attached</string>
+    <string name="backup_email_subject">MoneyBible database backup</string>
+    <string name="backup_email_message">Your MoneyBible database containing bookmarks and notes is attached</string>
     <string name="backup_storage">Backup to storage</string>
     <string name="restore_storage">Restore from storage</string>
     <string name="restore_unsuccessfull">Restoring database was unsuccessful. Perhaps you gave invalid database file.</string>

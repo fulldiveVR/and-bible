@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\n\"ויאמר אלוהים, \'יהי אור,\' ויהי אור.\"\nבראשית א\' 3</string>
   <string name="version_text">גרסה %s</string>
@@ -133,7 +133,7 @@
   <string name="notes">הערות שוליים ומראי מקום</string>
   <string name="copy">העתק</string>
   <string name="share_verse">שתף …</string>
-  <string name="share_verse_subject">הפסוק הזה נשלח אליך באמצעות And Bible</string>
+  <string name="share_verse_subject">הפסוק הזה נשלח אליך באמצעות MoneyBible</string>
   <string name="compare_translations">השוואת תרגומים</string>
   <!--Link context menu-->
   <string name="open_link_in_this_window">פתח קישור כאן</string>

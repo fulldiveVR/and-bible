@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">
 \"Akkor ezt mondta Isten: Legyen világosság! És lett világosság.\"\nI. Mózes 1:3</string>
   <string name="version_text">Verzió: %s</string>
-  <string name="no_sdcard_error">Helyezz be egy SD-kártyát és indítsd újra az And Bible-t.</string>
+  <string name="no_sdcard_error">Helyezz be egy SD-kártyát és indítsd újra az MoneyBible-t.</string>
   <!--Main menu-->
   <string name="chooseBook">Dokumentum</string>
   <string name="selectPassage">Igehely</string>
@@ -124,7 +124,7 @@
   <string name="notes">Lábjegyzetek és hivatkozások</string>
   <string name="copy">Másolás</string>
   <string name="share_verse">Megosztás…</string>
-  <string name="share_verse_subject">Megosztottak veled egy bibliaverset az And Bible programmal</string>
+  <string name="share_verse_subject">Megosztottak veled egy bibliaverset az MoneyBible programmal</string>
   <string name="compare_translations">Fordítások összehasonlítása</string>
   <!--Link context menu-->
   <!--Bookmarks-->

@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\n\"വെളിച്ചം ഉണ്ടാകട്ടെ എന്നു ദൈവം കല്പിച്ചു; വെളിച്ചം ഉണ്ടായി.\"\nഉല്പത്തി 1:3</string>
   <string name="version_text">വേർഷൻ %s</string>
-  <string name="no_sdcard_error">SD കാർഡ്‌ ഉള്ളിൽ ഇട്ടശേഷം And Bible വീണ്ടും തുടങ്ങുക.</string>
+  <string name="no_sdcard_error">SD കാർഡ്‌ ഉള്ളിൽ ഇട്ടശേഷം MoneyBible വീണ്ടും തുടങ്ങുക.</string>
   <!--Main menu-->
   <string name="menu">മെനു</string>
   <string name="chooseBook">ഡോക്കുമെന്റ്</string>
@@ -124,7 +124,7 @@
   <string name="notes">അടിക്കുറിപ്പും സൂചനകളും</string>
   <string name="copy">കോപ്പി</string>
   <string name="share_verse">പങ്കിടുക</string>
-  <string name="share_verse_subject">And Bible ഉപയ്യോഗിച്ചാണു ഈ വേദവാക്യം നിങ്ങളുമായി പങ്കുവെച്ചതു</string>
+  <string name="share_verse_subject">MoneyBible ഉപയ്യോഗിച്ചാണു ഈ വേദവാക്യം നിങ്ങളുമായി പങ്കുവെച്ചതു</string>
   <string name="compare_translations">പരിഭാഷ താരതമ്യം ചെയ്യുക</string>
   <!--Link context menu-->
   <!--Bookmarks-->

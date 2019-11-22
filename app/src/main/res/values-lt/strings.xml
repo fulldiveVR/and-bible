@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\n\"Dievas tarė, „Teatsiranda šviesa!“ Ir atsirado šviesa.\"\nPradžios 1:3</string>
   <string name="help_text">Veiksmams atlikti, spauskite MENIU mygtuką\n\n
@@ -29,7 +29,7 @@ Dokumentų rodinyje ilgai paspaudę ant dokumento, galėsite jį pašalinti arba
 Ilgai paspaudę mygtuką Atgal, pasieksite Istorijos sąrašą.
 </string>
   <string name="version_text">Versija %s</string>
-  <string name="no_sdcard_error">Prašome įdėti SD kortelę ir iš naujo paleisti And Bible.</string>
+  <string name="no_sdcard_error">Prašome įdėti SD kortelę ir iš naujo paleisti MoneyBible.</string>
   <!--Main menu-->
   <string name="menu">Meniu</string>
   <string name="chooseBook">Dokumentas</string>
@@ -172,7 +172,7 @@ Ilgai paspaudę mygtuką Atgal, pasieksite Istorijos sąrašą.
   <string name="notes">Išnašos ir nuorodos</string>
   <string name="copy">Kopijuoti</string>
   <string name="share_verse">Dalintis</string>
-  <string name="share_verse_subject">Su jumis pasidalinta Biblijos eilute per programą And Bible</string>
+  <string name="share_verse_subject">Su jumis pasidalinta Biblijos eilute per programą MoneyBible</string>
   <string name="compare_translations">Lyginti vertimus</string>
   <!--Link context menu-->
   <string name="open_link_in_this_window">Atverti nuorodą čia</string>

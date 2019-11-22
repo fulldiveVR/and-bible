@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And 성경</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\"하나님이 빛이 있으라 하시매 빛이 있었고\" 창세기 1장 3절</string>
   <string name="version_text">버전의 %s</string>

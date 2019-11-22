@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">エンドバイブル</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\"そのとき、神が「光よ.あれ.」と仰せられた。すると光ができた。\n創世記１：３</string>
   <string name="version_text">%s版</string>

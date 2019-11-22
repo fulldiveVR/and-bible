@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\"Un Dievs sacīja: \'Lai top gaisma\' un gaisma tapa.\" \nGenesis 1:03</string>
   <string name="help_nav_title">Navigācija</string>
@@ -12,7 +12,7 @@
   <string name="help_search_title">Meklēt</string>
   <string name="help_contextmenus_title">Konteksta izvēlnes</string>
   <string name="version_text">Versija %s</string>
-  <string name="no_sdcard_error">Lūdzu, ievietojiet SD karti un startējiet And Bible vēlreiz.</string>
+  <string name="no_sdcard_error">Lūdzu, ievietojiet SD karti un startējiet MoneyBible vēlreiz.</string>
   <!--Main menu-->
   <string name="menu">Izvēlne</string>
   <string name="chooseBook">Dokuments</string>
@@ -129,7 +129,7 @@
   <string name="notes">Zemsvītras piezīmes un atsauces</string>
   <string name="copy">Kopēt</string>
   <string name="share_verse">Dalīties …</string>
-  <string name="share_verse_subject">Šo Bībeles pants Jums nosūtīts izmantojot And Bible</string>
+  <string name="share_verse_subject">Šo Bībeles pants Jums nosūtīts izmantojot MoneyBible</string>
   <string name="compare_translations">Salīdzināt tulkojumus</string>
   <!--Link context menu-->
   <!--Bookmarks-->

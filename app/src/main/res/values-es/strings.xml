@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\n«Dijo Dios: \"Haya luz\", y hubo luz.»\nGénesis 1,3</string>
   <string name="help_nav_title">Navegación</string>
@@ -22,7 +22,7 @@ Realice una presión larga en la vista de la Biblia para abrir el menú contextu
 Realice presión larga en un documento en el selector de documentos para eliminarlo o ver información.
 Realice presión larga en el botón \"Atrás\" para acceder el listado del historial.</string>
   <string name="version_text">Versión %s</string>
-  <string name="no_sdcard_error">Por favor inserte una tarjeta SD e inicie And Bible nuevamente.</string>
+  <string name="no_sdcard_error">Por favor inserte una tarjeta SD e inicie MoneyBible nuevamente.</string>
   <!--Main menu-->
   <string name="menu">Menú</string>
   <string name="chooseBook">Documento</string>
@@ -158,7 +158,7 @@ Realice presión larga en el botón \"Atrás\" para acceder el listado del histo
   <string name="notes">Pies de página y referencias</string>
   <string name="copy">Copiar</string>
   <string name="share_verse">Compartir …</string>
-  <string name="share_verse_subject">Un versículo de Biblia ha sido compartido contigo usando And Bible</string>
+  <string name="share_verse_subject">Un versículo de Biblia ha sido compartido contigo usando MoneyBible</string>
   <string name="compare_translations">Compara traducciones</string>
   <!--Link context menu-->
   <string name="open_link_in_this_window">Abrir enlace aquí</string>

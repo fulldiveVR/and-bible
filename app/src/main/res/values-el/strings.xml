@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">And Bible</string>
+  <string name="app_name">MoneyBible</string>
   <!--Startup & Help-->
   <string name="splash_top_text">\n\"Και ο Θεός είπε,« Γενηθήτω φως, και υπήρχε φως. \"\nΓένεσις 1:03</string>
   <string name="version_text">Έκδοση %s</string>
-  <string name="no_sdcard_error">Παρακαλώ εισάγετε μια κάρτα SD για να αρχίσει και πάλι το And Bible.</string>
+  <string name="no_sdcard_error">Παρακαλώ εισάγετε μια κάρτα SD για να αρχίσει και πάλι το MoneyBible.</string>
   <!--Main menu-->
   <string name="chooseBook">Εγγραφο</string>
   <string name="selectPassage">Εδάφιο</string>
