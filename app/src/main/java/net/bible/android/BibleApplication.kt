@@ -99,7 +99,7 @@ open class BibleApplication : MultiDexApplication() {
         ttsNotificationManager = TextToSpeechNotificationManager()
         ttsWidgetManager = SpeakWidgetManager()
 
-        EventSender.Companion.getInstance(applicationContext) // initialize
+        EventSender.getInstance(applicationContext) // initialize
     }
 
     /**

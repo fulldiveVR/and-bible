@@ -32,15 +32,7 @@ import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.util.TypedValue
-import android.view.ContextMenu
-import android.view.GestureDetector
-import android.view.KeyEvent
-import android.view.Menu
-import android.view.MenuItem
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewConfiguration
-import android.view.WindowManager
+import android.view.*
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.ArrayAdapter
@@ -53,17 +45,17 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.children
 import androidx.drawerlayout.widget.DrawerLayout
+import com.fulldive.eventsender.lib.EventSender
 import kotlinx.android.synthetic.main.main_bible_view.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-
 import net.bible.android.BibleApplication
 import net.bible.android.activity.R
 import net.bible.android.control.BibleContentManager
 import net.bible.android.control.PassageChangeMediator
 import net.bible.android.control.backup.BackupControl
-import net.bible.android.control.event.ABEventBus
 import net.bible.android.control.document.DocumentControl
+import net.bible.android.control.event.ABEventBus
 import net.bible.android.control.event.ToastEvent
 import net.bible.android.control.event.apptobackground.AppToBackgroundEvent
 import net.bible.android.control.event.passage.*
@@ -75,12 +67,7 @@ import net.bible.android.control.search.SearchControl
 import net.bible.android.control.speak.SpeakControl
 import net.bible.android.view.activity.DaggerMainBibleActivityComponent
 import net.bible.android.view.activity.MainBibleActivityModule
-import net.bible.android.view.activity.base.ActivityBase
-import net.bible.android.view.activity.base.CurrentActivityHolder
-import net.bible.android.view.activity.base.CustomTitlebarActivityBase
-import net.bible.android.view.activity.base.Dialogs
-import net.bible.android.view.activity.base.IntentHelper
-import net.bible.android.view.activity.base.SharedActivityState
+import net.bible.android.view.activity.base.*
 import net.bible.android.view.activity.bookmark.Bookmarks
 import net.bible.android.view.activity.navigation.ChooseDictionaryWord
 import net.bible.android.view.activity.navigation.ChooseDocument
@@ -102,7 +89,6 @@ import org.crosswire.jsword.passage.Verse
 import org.crosswire.jsword.passage.VerseFactory
 import org.crosswire.jsword.versification.BookName
 import org.json.JSONObject
-
 import javax.inject.Inject
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
@@ -1232,6 +1218,16 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
         if (documentViewManager.documentView.isPagePreviousOkay) {
             windowControl.activeWindowPageManager.currentPage.previous()
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        EventSender.getInstance(applicationContext).onStart(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        EventSender.getInstance(applicationContext).onStop(this)
     }
 
 

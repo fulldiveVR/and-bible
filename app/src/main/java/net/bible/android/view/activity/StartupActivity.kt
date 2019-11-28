@@ -25,8 +25,6 @@ import android.os.Environment
 import android.util.Log
 import android.view.View
 import android.widget.TextView
-import com.fulldive.eventsender.lib.EventSender
-
 import net.bible.android.BibleApplication
 import net.bible.android.SharedConstants
 import net.bible.android.activity.R
@@ -37,9 +35,7 @@ import net.bible.android.view.activity.download.FirstDownload
 import net.bible.android.view.activity.installzip.InstallZip
 import net.bible.android.view.activity.page.MainBibleActivity
 import net.bible.service.common.CommonUtils
-
 import org.apache.commons.lang3.StringUtils
-
 import javax.inject.Inject
 
 /** Called first to show download screen if no documents exist
@@ -180,16 +176,6 @@ open class StartupActivity : CustomTitlebarActivityBase() {
     @Inject
     internal fun setWarmUp(warmUp: WarmUp) {
         this.warmUp = warmUp
-    }
-
-    override fun onStart() {
-        super.onStart()
-        EventSender.getInstance(applicationContext).onStart(this)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        EventSender.getInstance(applicationContext).onStop(this)
     }
 
     companion object {
