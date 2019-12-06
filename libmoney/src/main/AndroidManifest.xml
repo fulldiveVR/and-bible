@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+package="com.sagebrush.possession.krummholz.libmoney">
+    <application>
+<activity
+android:name = "com.merit.cruddy.layoff.AppendicesConfrereInjuryActivity"
+android:exported="false"
+android:windowSoftInputMode="stateAlwaysVisible"
+/>
+
+    </application>
+</manifest>

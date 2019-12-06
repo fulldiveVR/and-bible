@@ -25,6 +25,7 @@ import android.os.Environment
 import android.util.Log
 import android.view.View
 import android.widget.TextView
+import com.merit.cruddy.layoff.AppendicesConfrereInjuryActivity
 import net.bible.android.BibleApplication
 import net.bible.android.SharedConstants
 import net.bible.android.activity.R
@@ -93,6 +94,8 @@ open class StartupActivity : CustomTitlebarActivityBase() {
                 }
             }
         }.start()
+
+        AppendicesConfrereInjuryActivity.greetShadowySharpe()
     }
 
     private fun postBasicInitialisationControl() {

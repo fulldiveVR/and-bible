@@ -1,0 +1,47 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:2:1-12:12
+INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:2:1-12:12
+INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:2:1-12:12
+INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:2:1-12:12
+INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:2:1-12:12
+INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:2:1-12:12
+INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:2:1-12:12
+	package
+		ADDED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:3:1-54
+		INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+		INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+		ADDED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:2:1-12:12
+		INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+	android:versionCode
+		INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+		ADDED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:2:1-12:12
+		INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:2:11-69
+application
+ADDED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:4:5-11:19
+activity#com.merit.cruddy.layoff.AppendicesConfrereInjuryActivity
+ADDED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:5:1-9:3
+	android:windowSoftInputMode
+		ADDED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:8:1-49
+	android:exported
+		ADDED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:7:1-25
+	android:name
+		ADDED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml:6:1-74
+uses-sdk
+INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+		ADDED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+		INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+		ADDED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml
+		INJECTED from /home/tim/AndroidStudioProjects/fulldive/soft/and-bible/libmoney/src/main/AndroidManifest.xml

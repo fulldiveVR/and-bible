@@ -40,6 +40,7 @@ import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import net.bible.android.BibleApplication
+import net.bible.android.activity.BuildConfig
 import net.bible.android.activity.R
 import net.bible.android.control.backup.BackupControl
 import net.bible.android.control.download.DownloadControl
@@ -109,7 +110,7 @@ constructor(private val callingActivity: MainBibleActivity,
                     callingActivity.startActivityForResult(intent, IntentHelper.UPDATE_SUGGESTED_DOCUMENTS_ON_FINISH)
                 }
                 R.id.rateButton -> {
-                    val uri = Uri.parse("market://details?id=" + callingActivity.packageName)
+                    val uri = Uri.parse("market://details?id=" + BuildConfig.APPLICATION_ID)
                     val intent = Intent(Intent.ACTION_VIEW, uri).apply{
                         // To count with Play market backstack, After pressing back button,
                         // to taken back to our application, we need to add following flags to intent.
@@ -121,7 +122,7 @@ constructor(private val callingActivity: MainBibleActivity,
                     try {
                         callingActivity.startActivity(intent)
                     } catch (e: ActivityNotFoundException) {
-                        val httpUri = Uri.parse("http://play.google.com/store/apps/details?id=" + callingActivity.packageName)
+                        val httpUri = Uri.parse("http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID)
                         callingActivity.startActivity(Intent(Intent.ACTION_VIEW, httpUri))
                     }
                 }
