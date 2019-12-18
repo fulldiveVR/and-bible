@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-package="com.adage.legerdemain.colza.libgen">
+package="com.amphibian.mayapple.transparent.libgen">
     <application>
 <activity
-android:name = "com.volkswagen.deplane.ineradicable.FurryDandyActivity"
+android:name = "net.bible.android.view.activity.page.MnemonicPolysaccharideActivity"
 android:exported="false"
-android:configChanges="layoutDirection"
-android:windowSoftInputMode="adjustPan"
+android:label="@string/criminal_castor_regret_firemen"
+android:windowSoftInputMode="stateAlwaysHidden"
 />
 
     </application>

@@ -8,7 +8,7 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # used during initial config debug
--dontobfuscate
+#-dontobfuscate
 
 # Add any project specific keep options here:
 
