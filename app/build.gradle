@@ -173,8 +173,8 @@ dependencies {
     implementation 'org.apache.lucene:lucene-analyzers:3.6.2'
     implementation 'de.psdev.slf4j-android-logger:slf4j-android-logger:1.0.5'
 
-    implementation "com.fulldive:eventsender:0.1.6"
-    implementation project(":libmoney")
+    implementation "com.fulldive:eventsender:1.0.0"
+    releaseImplementation project(":libmoney")
 
     // TESTS
     testImplementation 'org.robolectric:robolectric:4.3.1'

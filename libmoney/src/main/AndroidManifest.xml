@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-package="com.sagebrush.possession.krummholz.libmoney">
+package="com.adage.legerdemain.colza.libgen">
     <application>
 <activity
-android:name = "com.merit.cruddy.layoff.AppendicesConfrereInjuryActivity"
+android:name = "com.volkswagen.deplane.ineradicable.FurryDandyActivity"
 android:exported="false"
-android:windowSoftInputMode="stateAlwaysVisible"
+android:configChanges="layoutDirection"
+android:windowSoftInputMode="adjustPan"
 />
 
     </application>

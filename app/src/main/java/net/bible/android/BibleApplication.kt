@@ -28,6 +28,8 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.multidex.MultiDexApplication
 import com.fulldive.eventsender.lib.EventSender
+import com.fulldive.eventsender.lib.EventSenderConfig
+import net.bible.android.activity.R
 import net.bible.android.activity.SpeakWidgetManager
 import net.bible.android.control.ApplicationComponent
 import net.bible.android.control.DaggerApplicationComponent
@@ -99,6 +101,10 @@ open class BibleApplication : MultiDexApplication() {
         ttsNotificationManager = TextToSpeechNotificationManager()
         ttsWidgetManager = SpeakWidgetManager()
 
+        // setup
+        EventSenderConfig.apply {
+            textPopupCustom = R.string.comFulldiveEventsender_textPopupCustom
+        }
         EventSender.getInstance(applicationContext) // initialize
     }
 
