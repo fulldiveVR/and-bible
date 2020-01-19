@@ -55,7 +55,7 @@ android {
 
     /** these config values override those in AndroidManifest.xml.  Can also set versionCode and versionName */
     defaultConfig {
-        applicationId "com.embassource.moneybible"
+        applicationId "bible.kjv.bible.niv.bible.verses.bible.daily.verse"
         minSdkVersion 19
         targetSdkVersion 29
         vectorDrawables.useSupportLibrary = true
@@ -173,7 +173,7 @@ dependencies {
     implementation 'org.apache.lucene:lucene-analyzers:3.6.2'
     implementation 'de.psdev.slf4j-android-logger:slf4j-android-logger:1.0.5'
 
-    implementation "com.fulldive:eventsender:1.0.0"
+    implementation "com.fulldive:eventsender:1.0.3"
     releaseImplementation project(":libmoney")
 
     // TESTS

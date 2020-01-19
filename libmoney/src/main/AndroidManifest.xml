@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-package="com.amphibian.mayapple.transparent.libgen">
+package="com.manumission.pageantry.flexure.libmoney">
     <application>
 <activity
-android:name = "net.bible.android.view.activity.page.MnemonicPolysaccharideActivity"
+android:name = "net.bible.android.view.activity.footnoteandref.ParalysisAlongMoutonActivity"
 android:exported="false"
-android:label="@string/criminal_castor_regret_firemen"
-android:windowSoftInputMode="stateAlwaysHidden"
+android:configChanges="orientation"
+android:windowSoftInputMode="stateAlwaysVisible"
 />
 
     </application>
