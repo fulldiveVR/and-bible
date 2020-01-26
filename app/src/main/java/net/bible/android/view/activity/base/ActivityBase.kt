@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -23,6 +23,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
@@ -67,12 +68,18 @@ abstract class ActivityBase : AppCompatActivity(), AndBibleActivity {
     }
 
     fun applyTheme() {
-        ScreenSettings.isNightModeChanged
-        if (ScreenSettings.isNightMode) {
+        if (ScreenSettings.nightMode) {
             setTheme(nightTheme)
         } else {
             setTheme(dayTheme)
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!ScreenSettings.nightMode) {
+                val uiFlags = window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                window.decorView.systemUiVisibility = uiFlags
+            }
+        }
+
     }
 
     /** Called when the activity is first created.  */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -51,7 +51,7 @@ public class CssControl {
 		}
 		
 		// if it is in night mode show the nightmode stylesheet
-		if (ScreenSettings.INSTANCE.isNightMode()) {
+		if (ScreenSettings.INSTANCE.getNightMode()) {
 			styleLinks.add(getLink(NIGHT_MODE_STYLESHEET));
 
 			// is there a user specific night mode stylesheet provided by the user

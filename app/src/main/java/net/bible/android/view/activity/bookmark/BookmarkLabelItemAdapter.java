@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -63,7 +63,7 @@ public class BookmarkLabelItemAdapter extends ArrayAdapter<LabelDto> {
 		}
 		CheckedTextView nameView = (CheckedTextView) rowView;
 		nameView.setText(labelDto.getName());
-		if (labelDto.getBookmarkStyle()==null) {
+		if (labelDto.getBookmarkStyle() ==null) {
 			nameView.setBackgroundColor(UiUtils.INSTANCE.getThemeBackgroundColour(getContext()));
 		} else {
 			bookmarkStyleAdapterHelper.styleView(nameView, labelDto.getBookmarkStyle(), getContext(), false, false);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -54,11 +54,9 @@ class SpeakTransportWidget(context: Context, attributeSet: AttributeSet): Linear
     init {
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         inflater.inflate(R.layout.speak_transport_widget, this, true)
-        ABEventBus.getDefault().register(this)
 
         buildActivityComponent().inject(this)
 
-        statusText.text = speakControl.getStatusText(FLAG_SHOW_ALL)
         speakPauseButton.setOnClickListener { onButtonClick(it) }
         prevButton.setOnClickListener { onButtonClick(it) }
         nextButton.setOnClickListener { onButtonClick(it) }
@@ -80,10 +78,18 @@ class SpeakTransportWidget(context: Context, attributeSet: AttributeSet): Linear
                         .getBoolean(R.styleable.SpeakTransportWidget_showConfig, false)) {
             configButton.visibility = View.GONE
         }
-
-        resetView(SpeakSettings.load())
     }
 
+    override fun onDetachedFromWindow() {
+        ABEventBus.getDefault().register(this)
+        super.onDetachedFromWindow()
+    }
+
+    override fun onAttachedToWindow() {
+        ABEventBus.getDefault().unregister(this)
+        super.onAttachedToWindow()
+        resetView(SpeakSettings.load())
+    }
 
     private fun onButtonClick(button: View) {
         try {
@@ -136,6 +142,7 @@ class SpeakTransportWidget(context: Context, attributeSet: AttributeSet): Linear
     }
 
     private fun resetView(speakSettings: SpeakSettings? = null) {
+        statusText.text = speakControl.getStatusText(FLAG_SHOW_ALL)
         speakPauseButton.setImageResource(
                 if(speakControl.isSpeaking)
                     R.drawable.ic_pause_black_24dp

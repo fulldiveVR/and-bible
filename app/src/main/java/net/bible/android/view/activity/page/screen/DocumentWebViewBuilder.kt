@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the Money Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -23,12 +23,10 @@ import android.content.Context
 import android.graphics.Typeface
 import android.os.Build
 import android.text.TextUtils
-
-import androidx.appcompat.view.menu.MenuBuilder
-import androidx.appcompat.view.menu.MenuPopupHelper
-import androidx.appcompat.widget.PopupMenu
 import android.util.Log
 import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
@@ -39,8 +37,11 @@ import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.AppCompatButton
-
+import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.children
 import net.bible.android.BibleApplication
 import net.bible.android.activity.R
 import net.bible.android.control.document.DocumentControl
@@ -51,13 +52,22 @@ import net.bible.android.control.event.window.NumberOfWindowsChangedEvent
 import net.bible.android.control.page.window.Window
 import net.bible.android.control.page.window.Window.WindowOperation
 import net.bible.android.control.page.window.WindowControl
+import net.bible.android.database.WorkspaceEntities.TextDisplaySettings.Id
 import net.bible.android.view.activity.MainBibleActivityScope
 import net.bible.android.view.activity.page.BibleView
 import net.bible.android.view.activity.page.BibleViewFactory
+import net.bible.android.view.activity.page.CommandItem
 import net.bible.android.view.activity.page.MainBibleActivity
+import net.bible.android.view.activity.page.OptionsMenuItemInterface
+import net.bible.android.view.activity.page.SubMenuMenuItemPreference
+import net.bible.android.view.activity.page.WindowFontSizeItem
+import net.bible.android.view.activity.page.WindowMorphologyMenuItemPreference
+import net.bible.android.view.activity.page.WindowStrongsMenuItemPreference
+import net.bible.android.view.activity.page.WindowTextContentMenuItemPreference
 import net.bible.service.common.CommonUtils
+import net.bible.service.device.ScreenSettings
+import org.crosswire.jsword.versification.BookName
 import java.util.*
-
 import javax.inject.Inject
 import kotlin.math.max
 
@@ -87,8 +97,7 @@ class DocumentWebViewBuilder @Inject constructor(
     private val windowControl: WindowControl,
     private val mainBibleActivity: MainBibleActivity,
     private val bibleViewFactory: BibleViewFactory,
-    private val documentControl: DocumentControl,
-    private val windowMenuCommandHandler: WindowMenuCommandHandler
+    private val documentControl: DocumentControl
 ) {
 
     private var isWindowConfigurationChanged = true
@@ -126,6 +135,10 @@ class DocumentWebViewBuilder @Inject constructor(
         isWindowConfigurationChanged = true
     }
 
+    fun destroy() {
+        ABEventBus.getDefault().unregister(this)
+    }
+
     /**
      * Enable switch from Bible WebView to MyNote view
      */
@@ -135,10 +148,13 @@ class DocumentWebViewBuilder @Inject constructor(
         if (isWebView) {
             parent.tag = ""
             removeChildViews(parent)
+            ABEventBus.getDefault().post(AfterRemoveWebViewEvent())
         }
     }
 
-    private val isSingleWindow get () = !windowControl.isMultiWindow && windowControl.windowRepository.minimisedScreens.isEmpty()
+    private val isSingleWindow get () = !windowControl.isMultiWindow && windowRepository.minimisedWindows.isEmpty()
+
+    val windowRepository get() = windowControl.windowRepository
 
     @SuppressLint("RtlHardcoded")
     fun addWebView(parent: LinearLayout) {
@@ -151,17 +167,19 @@ class DocumentWebViewBuilder @Inject constructor(
                 isSplitHorizontally != isLaidOutWithHorizontalSplit) {
             Log.d(TAG, "Layout web view")
 
-            val windows = windowControl.windowRepository.visibleWindows
+            val windows = windowRepository.visibleWindows
 
             // ensure we have a known starting point - could be none, 1, or 2 webviews present
+
             removeChildViews(previousParent)
+            ABEventBus.getDefault().post(AfterRemoveWebViewEvent())
 
             parent.orientation = if (isSplitHorizontally) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
             var currentWindowFrameLayout: ViewGroup? = null
             var previousSeparator: Separator? = null
             windowButtons.clear()
             for ((windowNo, window) in windows.withIndex()) {
-                Log.d(TAG, "Layout screen " + window.screenNo + " of " + windows.size)
+                Log.d(TAG, "Layout screen " + window.id + " of " + windows.size)
 
                 currentWindowFrameLayout = FrameLayout(this.mainBibleActivity)
 
@@ -204,7 +222,7 @@ class DocumentWebViewBuilder @Inject constructor(
                 }
 
                 // create default action button for top or bottom right of each window
-                if (!windowControl.windowRepository.isMaximisedState || window.isLinksWindow) {
+                if (!windowRepository.isMaximisedState || window.isLinksWindow) {
                     val defaultWindowActionButton =
                         if (isSingleWindow && window.defaultOperation != WindowOperation.MAXIMISE) {
                             createSingleWindowButton(window)
@@ -233,7 +251,7 @@ class DocumentWebViewBuilder @Inject constructor(
                     windowButtons.add(defaultWindowActionButton)
                     currentWindowFrameLayout.addView(defaultWindowActionButton,
                         FrameLayout.LayoutParams(BUTTON_SIZE_PX, BUTTON_SIZE_PX,
-                            if (isSingleWindow && windowControl.windowRepository.maximisedScreens.isEmpty())
+                            if (isSingleWindow && windowRepository.maximisedScreens.isEmpty())
                                 Gravity.BOTTOM or Gravity.RIGHT
                             else Gravity.TOP or Gravity.RIGHT))
                 }
@@ -272,7 +290,7 @@ class DocumentWebViewBuilder @Inject constructor(
             minimisedWindowsFrameContainer.translationY = -mainBibleActivity.bottomOffset2
             minimisedWindowsFrameContainer.translationX = -mainBibleActivity.rightOffset1
 
-            val minAndMaxScreens = windowControl.windowRepository.minimisedAndMaximizedScreens
+            val minAndMaxScreens = windowRepository.minimisedAndMaximizedScreens
             for (i in minAndMaxScreens.indices) {
                 Log.d(TAG, "Show restore button")
                 val restoreButton = createRestoreButton(minAndMaxScreens[i])
@@ -280,8 +298,8 @@ class DocumentWebViewBuilder @Inject constructor(
                 minimisedWindowsLayout.addView(restoreButton,
                         LinearLayout.LayoutParams(BUTTON_SIZE_PX, BUTTON_SIZE_PX))
             }
-            if (windowControl.windowRepository.isMaximisedState) {
-                val maximizedWindow = windowControl.windowRepository.maximisedScreens[0]
+            if (windowRepository.isMaximisedState) {
+                val maximizedWindow = windowRepository.maximisedScreens[0]
                 val unMaximizeButton = createUnMaximizeButton(maximizedWindow)
                 restoreButtons.add(unMaximizeButton)
                 minimisedWindowsLayout.addView(unMaximizeButton,
@@ -300,10 +318,13 @@ class DocumentWebViewBuilder @Inject constructor(
         }
         resetTouchTimer()
         mainBibleActivity.resetSystemUi()
+        ABEventBus.getDefault().post(WebViewsBuiltEvent())
     }
 
+    class WebViewsBuiltEvent
+
     private val windowButtons: MutableList<Button> = ArrayList()
-    private val restoreButtons: MutableList<RestoreButton> = ArrayList()
+    private val restoreButtons: MutableList<WindowButton> = ArrayList()
     private lateinit var minimisedWindowsFrameContainer: HorizontalScrollView
     private lateinit var bibleReferenceOverlay: TextView
 
@@ -330,7 +351,7 @@ class DocumentWebViewBuilder @Inject constructor(
     }
 
     private fun updateMinimizedButtonLetter(w: Window) {
-        restoreButtons.find { it.screenNo == w.screenNo }?.text = getDocumentInitial(w)
+        restoreButtons.find { it.window?.id == w.id }?.text = getDocumentInitial(w)
     }
 
     fun onEvent(event: MainBibleActivity.ConfigurationChanged) {
@@ -385,7 +406,7 @@ class DocumentWebViewBuilder @Inject constructor(
                         if (isSingleWindow) -mainBibleActivity.bottomOffset2
                         else (
                             if(CommonUtils.isSplitVertically) {
-                                if(idx == 0 && !windowControl.windowRepository.isMaximisedState)
+                                if(idx == 0 && !windowRepository.isMaximisedState)
                                     mainBibleActivity.topOffset2
                                 else 0.0F
                             }
@@ -397,7 +418,7 @@ class DocumentWebViewBuilder @Inject constructor(
                         alpha(VISIBLE_ALPHA)
                         interpolator = DecelerateInterpolator()
                     }  else {
-                        alpha(HIDDEN_ALPHA)
+                        alpha(hiddenAlpha)
                         interpolator = AccelerateInterpolator()
                     }
                     start()
@@ -410,6 +431,8 @@ class DocumentWebViewBuilder @Inject constructor(
         buttonsVisible = show
     }
 
+    private val hiddenAlpha get() = if(ScreenSettings.nightMode) HIDDEN_ALPHA_NIGHT else HIDDEN_ALPHA
+
     private fun updateMinimizedButtons(show: Boolean) {
         if(show) {
             minimisedWindowsFrameContainer.visibility = View.VISIBLE
@@ -420,7 +443,7 @@ class DocumentWebViewBuilder @Inject constructor(
                 .start()
         }  else {
             if(mainBibleActivity.fullScreen) {
-                minimisedWindowsFrameContainer.animate().alpha(HIDDEN_ALPHA)
+                minimisedWindowsFrameContainer.animate().alpha(hiddenAlpha)
                     .setInterpolator(AccelerateInterpolator())
                     .start()
             }
@@ -480,14 +503,13 @@ class DocumentWebViewBuilder @Inject constructor(
     }
 
     private fun createSeparator(
-            parent: LinearLayout,
-            window: Window,
-            nextScreen: Window,
-            isPortrait: Boolean,
-            numWindows: Int): Separator {
-        return Separator(this.mainBibleActivity, WINDOW_SEPARATOR_WIDTH_PX, parent, window, nextScreen,
-                numWindows, isPortrait, windowControl)
-    }
+        parent: LinearLayout,
+        window: Window,
+        nextWindow: Window,
+        isPortrait: Boolean,
+        numWindows: Int
+    ) = Separator(this.mainBibleActivity, WINDOW_SEPARATOR_WIDTH_PX, parent, window, nextWindow,
+        windowRepository.activeWindow, numWindows, isPortrait, windowControl)
 
     /**
      * parent contains Frame, seperator, Frame.
@@ -508,6 +530,9 @@ class DocumentWebViewBuilder @Inject constructor(
         }
     }
 
+    class AfterRemoveWebViewEvent
+
+
     /**
      * Attempt to fix occasional error: "The specified child already has a parent. You must call removeView() on the child's parent first."
      */
@@ -521,28 +546,31 @@ class DocumentWebViewBuilder @Inject constructor(
     }
 
     fun getView(window: Window): BibleView {
-        return bibleViewFactory.createBibleView(window)
+        return bibleViewFactory.getOrCreateBibleView(window)
     }
 
     private fun createSingleWindowButton(window: Window): Button {
         return createTextButton("⊕",
             { v -> windowControl.addNewWindow()},
-            { v -> false}
+            { v -> false},
+            window
         )
     }
 
     private fun createCloseButton(window: Window): Button {
         return createTextButton("X",
             { v -> windowControl.closeWindow(window)},
-            { v -> showPopupWindow(window, v); true}
+            { v -> false},
+            window
         )
     }
 
-    private fun createUnMaximizeButton(window: Window): RestoreButton {
+    private fun createUnMaximizeButton(window: Window): WindowButton {
         val text = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) "⇕" else "━━"
         val b = createTextButton(text,
             { v -> showPopupWindow(window, v) },
-            { v -> windowControl.unmaximiseWindow(window); true}
+            { v -> windowControl.unmaximiseWindow(window); true},
+            null
         )
         return b
     }
@@ -551,11 +579,12 @@ class DocumentWebViewBuilder @Inject constructor(
         val text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) "☰" else "━━"
         return createTextButton(text,
             { v -> showPopupWindow(window, v) },
-            { v -> windowControl.minimiseWindow(window); true }
+            { v -> windowControl.minimiseWindow(window); true },
+            window
         )
     }
 
-    private fun createRestoreButton(window: Window): RestoreButton {
+    private fun createRestoreButton(window: Window): WindowButton {
         return createTextButton(getDocumentInitial(window),
             { windowControl.restoreWindow(window) },
             { windowControl.restoreWindow(window); true },
@@ -568,7 +597,8 @@ class DocumentWebViewBuilder @Inject constructor(
      */
     private fun getDocumentInitial(window: Window): String {
         return try {
-            window.pageManager.currentPage.currentDocument.abbreviation.substring(0, 1)
+            val abbrv = window.pageManager.currentPage.currentDocument?.abbreviation
+            abbrv?.substring(0, 1) ?: ""
         } catch (e: Exception) {
             " "
         }
@@ -577,8 +607,8 @@ class DocumentWebViewBuilder @Inject constructor(
 
     private fun createTextButton(text: String, onClickListener: (View) -> Unit,
                                  onLongClickListener: ((View) -> Boolean)? = null,
-                                 window: Window? = null): RestoreButton {
-        return RestoreButton(mainBibleActivity, window?.screenNo).apply {
+                                 window: Window?): WindowButton {
+        return WindowButton(mainBibleActivity, window, windowRepository.activeWindow).apply {
             this.text = text
             width = BUTTON_SIZE_PX
             height = BUTTON_SIZE_PX
@@ -588,22 +618,18 @@ class DocumentWebViewBuilder @Inject constructor(
             setSingleLine(true)
             setOnClickListener(onClickListener)
             setOnLongClickListener(onLongClickListener)
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-                setBackgroundResource(if (window?.isMaximised ?: false) R.drawable.window_button_active
-                else R.drawable.window_button)
-            }
         }
     }
 
-    private fun createImageButton(drawableId: Int, onClickListener: (View) -> Unit, onLongClickListener: ((View) -> Boolean)? = null) =
-            Button(mainBibleActivity).apply {
-                setBackgroundColor(WINDOW_BUTTON_BACKGROUND_COLOUR)
-                setBackgroundResource(drawableId)
-                width = BUTTON_SIZE_PX
-                height = BUTTON_SIZE_PX
-                setOnClickListener(onClickListener)
-                setOnLongClickListener(onLongClickListener)
-            }
+    private fun handlePrefItem(window: Window, item: MenuItem) {
+        val itemOptions = getItemOptions(window, item)
+        if(itemOptions is SubMenuMenuItemPreference)
+            return
+
+        itemOptions.value = !itemOptions.value
+        itemOptions.handle()
+        item.isChecked = itemOptions.value
+    }
 
     @SuppressLint("RestrictedApi")
     private fun showPopupWindow(window: Window, view: View) {
@@ -615,14 +641,61 @@ class DocumentWebViewBuilder @Inject constructor(
         val popup = PopupMenu(mainBibleActivity, view)
         popup.setOnMenuItemClickListener { menuItem ->
             resetTouchTimer()
-            windowMenuCommandHandler.handleMenuRequest(menuItem)
+            handlePrefItem(window, menuItem)
+            true
+            //windowMenuCommandHandler.handleMenuRequest(menuItem)
         }
 
         val inflater = popup.menuInflater
         inflater.inflate(R.menu.window_popup_menu, popup.menu)
 
-        // enable/disable and set synchronised checkbox
-        windowControl.updateOptionsMenu(popup.menu)
+        val subMenu = popup.menu.findItem(R.id.textOptionsSubMenu).subMenu
+        inflater.inflate(R.menu.text_options_menu, subMenu)
+
+        val moveWindowsSubMenu = popup.menu.findItem(R.id.moveWindowSubMenu).subMenu
+
+        moveWindowsSubMenu.removeItem(R.id.moveItem)
+
+        var count = 0
+
+        val oldValue = BookName.isFullBookName()
+
+        BookName.setFullBookName(false)
+        val thisIdx = windowControl.windowRepository.windowList.indexOf(window)
+        windowControl.windowRepository.windowList.forEach {
+            if(it.id != window.id) {
+                val p = it.pageManager.currentPage
+                val title = BibleApplication.application.getString(R.string.move_window_to_position, "${count + 1} (${p.currentDocument?.abbreviation}: ${p.key?.name})")
+                val item = moveWindowsSubMenu.add(Menu.NONE, R.id.moveItem, count, title)
+                item.setIcon(if (thisIdx > count) R.drawable.ic_arrow_drop_up_grey_24dp else R.drawable.ic_arrow_drop_down_grey_24dp)
+            }
+            count ++;
+        }
+        BookName.setFullBookName(oldValue)
+
+        fun handleMenu(menu: Menu) {
+            for(item in menu.children) {
+                val itmOptions = getItemOptions(window, item)
+                item.title = itmOptions.getTitle(item.title)
+                item.isVisible = itmOptions.visible
+                item.isEnabled = itmOptions.enabled
+                if(itmOptions is WindowTextContentMenuItemPreference || itmOptions is WindowFontSizeItem) {
+                    if (itmOptions.inherited) {
+                        item.setIcon(R.drawable.ic_sync_white_24dp)
+                    } else {
+                        item.setIcon(R.drawable.ic_sync_disabled_green_24dp)
+                    }
+                }
+
+                if(item.hasSubMenu()) {
+                    handleMenu(item.subMenu)
+                    continue;
+                }
+
+                item.isChecked = itmOptions.value
+            }
+        }
+        handleMenu(popup.menu)
 
         val menuHelper = MenuPopupHelper(mainBibleActivity, popup.menu as MenuBuilder, view)
         menuHelper.setOnDismissListener {
@@ -634,16 +707,78 @@ class DocumentWebViewBuilder @Inject constructor(
         menuHelper.show()
     }
 
+    private fun getItemOptions(window: Window, item: MenuItem): OptionsMenuItemInterface {
+        return when(item.itemId) {
+
+            R.id.windowNew -> CommandItem({windowControl.addNewWindow()})
+            R.id.windowMaximise -> CommandItem(
+                {windowControl.setMaximized(window, !window.isMaximised)},
+                value = window.isMaximised
+            )
+            R.id.windowSynchronise -> CommandItem(
+                {windowControl.setSynchronised(window, !window.isSynchronised)},
+                value = window.isSynchronised)
+            R.id.moveWindowSubMenu -> SubMenuMenuItemPreference(false)
+            //R.id.windowMoveFirst -> CommandItem({windowControl.moveWindowToFirst(window)}, enabled = windowControl.canMoveFirst(window))
+            R.id.windowClose -> CommandItem({windowControl.closeWindow(window)}, enabled = windowControl.isWindowRemovable(window))
+            R.id.windowMinimise -> CommandItem({windowControl.minimiseWindow(window)}, enabled = windowControl.isWindowMinimisable(window))
+
+            R.id.textOptionsSubMenu -> SubMenuMenuItemPreference(false)
+
+            R.id.showBookmarksOption -> WindowTextContentMenuItemPreference(window, Id.BOOKMARKS)
+            R.id.redLettersOption -> WindowTextContentMenuItemPreference(window, Id.REDLETTERS)
+            R.id.sectionTitlesOption -> WindowTextContentMenuItemPreference(window, Id.SECTIONTITLES)
+            R.id.verseNumbersOption -> WindowTextContentMenuItemPreference(window, Id.VERSENUMBERS)
+            R.id.versePerLineOption -> WindowTextContentMenuItemPreference(window, Id.VERSEPERLINE)
+            R.id.footnoteOption -> WindowTextContentMenuItemPreference(window, Id.FOOTNOTES)
+            R.id.myNotesOption -> WindowTextContentMenuItemPreference(window, Id.MYNOTES)
+            R.id.showStrongsOption -> WindowStrongsMenuItemPreference(window)
+            R.id.morphologyOption -> WindowMorphologyMenuItemPreference(window)
+            R.id.fontSize -> WindowFontSizeItem(window)
+            R.id.moveItem -> CommandItem({
+                windowControl.moveWindow(window, item.order)
+                Log.d(TAG, "Number ${item.order}")
+            })
+            else -> throw RuntimeException("Illegal menu item")
+        }
+    }
+
     private fun isWebViewShowing(parent: ViewGroup): Boolean {
         val tag = parent.tag
         return tag != null && tag == TAG
     }
 
-    private class RestoreButton(context: Context, val screenNo: Int?): AppCompatButton(context)
+    private class WindowButton(context: Context, val window: Window?, var activeWindow: Window): AppCompatButton(context) {
+        init {
+            updateBackground()
+        }
+
+        fun updateBackground() {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+                setBackgroundResource(if (window?.id == activeWindow.id) R.drawable.window_button_active else R.drawable.window_button)
+            }
+        }
+
+        fun onEvent(event: CurrentWindowChangedEvent) {
+            activeWindow = event.activeWindow
+            updateBackground()
+        }
+        
+        override fun onAttachedToWindow() {
+            ABEventBus.getDefault().register(this)
+            super.onAttachedToWindow()
+        }
+
+        override fun onDetachedFromWindow() {
+            ABEventBus.getDefault().unregister(this)
+            super.onDetachedFromWindow()
+        }
+    }
 
     companion object {
         private const val TAG = "DocumentWebViewBuilder"
         private const val HIDDEN_ALPHA = 0.2F
+        private const val HIDDEN_ALPHA_NIGHT = 0.5F
         private const val VISIBLE_ALPHA = 1.0F
     }
 }

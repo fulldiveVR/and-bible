@@ -5,6 +5,8 @@ import net.bible.android.control.mynote.MyNoteDAO
 import net.bible.android.control.page.CurrentPageManager
 import net.bible.android.control.page.window.WindowLayout.WindowState
 import net.bible.android.control.versification.BibleTraverser
+import net.bible.android.database.WorkspaceEntities
+import net.bible.service.download.RepoFactory
 import net.bible.service.sword.SwordContentFacade
 import net.bible.service.sword.SwordDocumentFacade
 import net.bible.test.DatabaseResetter
@@ -46,11 +48,19 @@ class WindowTest {
         val swordContentFactory = mock(SwordContentFacade::class.java)
         val bibleTraverser = mock(BibleTraverser::class.java)
         val myNoteDao = mock(MyNoteDAO::class.java)
+        val windowRepository = mock(WindowRepository::class.java)
+        val repoFactory = mock(RepoFactory::class.java)
 
-        val mockCurrentPageManager = CurrentPageManager(swordContentFactory, SwordDocumentFacade(null), bibleTraverser, myNoteDao)
+        val mockWinRepo = mock(WindowRepository::class.java)
+        val mockCurrentPageManager = CurrentPageManager(swordContentFactory, SwordDocumentFacade(repoFactory), bibleTraverser, myNoteDao, mockWinRepo)
 
         // initialise Window
-        var window = Window(2, WindowState.MINIMISED, mockCurrentPageManager)
+        var window = Window(
+            WorkspaceEntities.Window(0,true, false, false,
+                WorkspaceEntities.WindowLayout(WindowState.MINIMISED.toString()), 2),
+            mockCurrentPageManager,
+            windowRepository
+        )
         var layout = window.windowLayout
         window.isSynchronised = true
         layout.weight = 1.23456f
@@ -60,14 +70,13 @@ class WindowTest {
         biblePage.setCurrentDocumentAndKey(PassageTestData.ESV, PassageTestData.PS_139_2)
 
         // serialize state
-        val json = window.stateJson
-        println(json)
+        val entity = window.entity
+        println(entity)
 
         // recreate window from saved state
-        window = Window(mockCurrentPageManager)
-        window.restoreState(json)
+        window = Window(entity, mockCurrentPageManager, windowRepository)
         layout = window.windowLayout
-        assertThat(window.screenNo, equalTo(2))
+        assertThat(window.id, equalTo(2L))
         assertThat(layout.state, equalTo(WindowState.MINIMISED))
         assertThat(window.isSynchronised, equalTo(true))
         assertThat(layout.weight, equalTo(1.23456f))

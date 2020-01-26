@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -32,7 +32,15 @@ import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.util.TypedValue
-import android.view.*
+import android.view.ContextMenu
+import android.view.GestureDetector
+import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewConfiguration
+import android.view.WindowManager
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.ArrayAdapter
@@ -45,41 +53,52 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.children
 import androidx.drawerlayout.widget.DrawerLayout
-import com.fulldive.eventsender.lib.EventSender
 import kotlinx.android.synthetic.main.main_bible_view.*
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import net.bible.android.BibleApplication
 import net.bible.android.activity.R
 import net.bible.android.control.BibleContentManager
-import net.bible.android.control.PassageChangeMediator
 import net.bible.android.control.backup.BackupControl
 import net.bible.android.control.document.DocumentControl
 import net.bible.android.control.event.ABEventBus
 import net.bible.android.control.event.ToastEvent
 import net.bible.android.control.event.apptobackground.AppToBackgroundEvent
-import net.bible.android.control.event.passage.*
+import net.bible.android.control.event.passage.CurrentVerseChangedEvent
+import net.bible.android.control.event.passage.PassageChangeStartedEvent
+import net.bible.android.control.event.passage.PassageChangedEvent
+import net.bible.android.control.event.passage.PreBeforeCurrentPageChangeEvent
+import net.bible.android.control.event.passage.SynchronizeWindowsEvent
 import net.bible.android.control.event.window.CurrentWindowChangedEvent
 import net.bible.android.control.event.window.NumberOfWindowsChangedEvent
 import net.bible.android.control.navigation.NavigationControl
 import net.bible.android.control.page.window.WindowControl
 import net.bible.android.control.search.SearchControl
 import net.bible.android.control.speak.SpeakControl
+import net.bible.android.database.WorkspaceEntities
+import net.bible.android.database.WorkspaceEntities.TextDisplaySettings
 import net.bible.android.view.activity.DaggerMainBibleActivityComponent
 import net.bible.android.view.activity.MainBibleActivityModule
-import net.bible.android.view.activity.base.*
+import net.bible.android.view.activity.base.ActivityBase
+import net.bible.android.view.activity.base.CurrentActivityHolder
+import net.bible.android.view.activity.base.CustomTitlebarActivityBase
+import net.bible.android.view.activity.base.Dialogs
+import net.bible.android.view.activity.base.IntentHelper
+import net.bible.android.view.activity.base.SharedActivityState
 import net.bible.android.view.activity.bookmark.Bookmarks
+import net.bible.android.view.activity.mynote.MyNotes
 import net.bible.android.view.activity.navigation.ChooseDictionaryWord
 import net.bible.android.view.activity.navigation.ChooseDocument
 import net.bible.android.view.activity.navigation.GridChoosePassageBook
 import net.bible.android.view.activity.navigation.History
+import net.bible.android.view.activity.page.actionbar.BibleActionBarManager
 import net.bible.android.view.activity.page.actionmode.VerseActionModeMediator
 import net.bible.android.view.activity.page.screen.DocumentViewManager
+import net.bible.android.view.activity.page.screen.DocumentWebViewBuilder
 import net.bible.android.view.activity.speak.BibleSpeakActivity
 import net.bible.android.view.activity.speak.GeneralSpeakActivity
+import net.bible.android.view.util.widget.TextSizeWidget
 import net.bible.service.common.CommonUtils
-import net.bible.service.common.CommonUtils.JSON_CONFIG
 import net.bible.service.common.TitleSplitter
+import net.bible.service.db.DatabaseContainer
 import net.bible.service.device.ScreenSettings
 import net.bible.service.device.speak.event.SpeakEvent
 import org.crosswire.jsword.book.Book
@@ -88,7 +107,6 @@ import org.crosswire.jsword.passage.NoSuchVerseException
 import org.crosswire.jsword.passage.Verse
 import org.crosswire.jsword.passage.VerseFactory
 import org.crosswire.jsword.versification.BookName
-import org.json.JSONObject
 import javax.inject.Inject
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
@@ -104,8 +122,18 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
     // We need to have this here in order to initialize BibleContentManager early enough.
     @Inject
     lateinit var bibleContentManager: BibleContentManager
+
+    @Inject
+    lateinit var bibleViewFactory: BibleViewFactory
+
     @Inject
     lateinit var documentViewManager: DocumentViewManager
+
+    @Inject
+    lateinit var documentWebViewBuilder: DocumentWebViewBuilder
+
+    @Inject lateinit var bibleActionBarManager: BibleActionBarManager
+
     @Inject
     lateinit var windowControl: WindowControl
     @Inject
@@ -128,9 +156,6 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
     override var nightTheme = R.style.MainBibleViewNightTheme
     override var dayTheme = R.style.MainBibleViewTheme
 
-    // If the activity has been created
-    var ready = false
-
     private var statusBarHeight = 0.0F
     private var navigationBarHeight = 0.0F
     private var actionBarHeight = 0.0F
@@ -141,6 +166,8 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
     private val rightNavBarVisible get() = false
     private val leftNavBarVisible get() = false
     private var transportBarVisible = false
+
+    val dao get() = DatabaseContainer.db.workspaceDao()
 
     val isMyNotes
         get() =
@@ -188,6 +215,8 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
 
         // This is singleton so we can do this.
         mainBibleActivity = this
+        ScreenSettings.refreshNightMode()
+        currentNightMode = ScreenSettings.nightMode
         super.onCreate(savedInstanceState, true)
 
         setContentView(R.layout.main_bible_view)
@@ -196,7 +225,7 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
             .mainBibleActivityModule(MainBibleActivityModule(this))
             .build()
             .inject(this)
-        windowControl.windowRepository.restoreState()
+        windowRepository.initialize()
         hasHwKeys = ViewConfiguration.get(this).hasPermanentMenuKey()
 
         val statusBarId = resources.getIdentifier("status_bar_height", "dimen", "android")
@@ -253,19 +282,20 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
         ABEventBus.getDefault().register(this)
 
         // force all windows to be populated
-        windowControl.windowSync.synchronizeAllScreens()
+        windowControl.windowSync.reloadAllWindows(true)
         updateActions()
         refreshScreenKeepOn()
-        requestSdcardPermission()
+        if(!initialized)
+            requestSdcardPermission()
         setupToolbarButtons()
 
         speakTransport.visibility = View.GONE
         updateSpeakTransportVisibility()
         setupToolbarFlingDetection()
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
-        currentWorkspaceName
-        ready = true
-        showBetaNotice()
+        if(!initialized)
+            showBetaNotice()
+        initialized = true
     }
 
     private fun showBetaNotice() {
@@ -420,118 +450,84 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
         dictionaryButton.setOnClickListener { setCurrentDocument(documentControl.suggestedDictionary) }
     }
 
-    class AutoFullScreenChanged(val newValue: Boolean)
-
-
+    val workspaces get() = dao.allWorkspaces()
 
     private fun deleteWorkspace() {
-        val nextWorkspace = if (currentWorkspace > 0) currentWorkspace - 1 else 0
-        val workspaces = workspaceStrings
-        workspaces.removeAt(currentWorkspace)
-        val newWorkspace = workspaces[nextWorkspace]
-        currentWorkspace = nextWorkspace
-        workspaceStrings = workspaces
-        openWorkspace(newWorkspace)
+        val nextWorkspace = workspaces.reversed().find { it.id < currentWorkspaceId } ?: workspaces[0]
+        dao.deleteWorkspace(currentWorkspaceId)
+        windowRepository.clear(true)
+        currentWorkspaceId = nextWorkspace.id
     }
 
     private fun renameWorkspace() {
         val input = EditText(this)
         input.inputType = InputType.TYPE_CLASS_TEXT
-        input.text = SpannableStringBuilder(windowControl.windowRepository.name)
+        input.text = SpannableStringBuilder(windowRepository.name)
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.rename_workspace_title))
             .setView(input)
             .setNegativeButton(R.string.cancel, null)
             .setPositiveButton(R.string.okay) { dialog, _ ->
                 dialog.dismiss()
-                windowControl.windowRepository.name = input.text.toString()
-                ABEventBus.getDefault().post(ToastEvent(currentWorkspaceName))
+                windowRepository.name = input.text.toString()
+                ABEventBus.getDefault().post(ToastEvent(windowRepository.name))
                 invalidateOptionsMenu()
             }
             .show()
-        val t = workspaceStrings
-        t[currentWorkspace] = currentWorkspaceState
-        workspaceStrings = t
     }
 
-    private val currentWorkspaceName: String
-        get() {
-            var text = windowControl.windowRepository.name
+    val windowRepository get() = windowControl.windowRepository
 
-            if(text.isEmpty())
-                text = getString(R.string.workspace_number, currentWorkspace + 1)
-            SharedActivityState.setCurrentWorkspaceName(text)
-            return text
-        }
-
-
-    private fun openWorkspace(workspace: String) {
-        windowControl.windowRepository.restoreState(workspace)
-        documentViewManager.resetView()
-        windowControl.windowSync.synchronizeAllScreens()
-        windowControl.windowRepository.saveState()
-
-        ABEventBus.getDefault().post(ToastEvent(currentWorkspaceName))
-
-        invalidateOptionsMenu()
-        updateTitle()
-        updateToolbar()
-    }
+    private val newWorkspaceName get () = getString(R.string.workspace_number, numWorkspaces + 1)
 
     private fun newWorkspace() {
-        val currentDocument = windowControl.activeWindowPageManager.currentPassageDocument
+        val defaultDocument = pageControl.currentPageManager.currentBible.currentDocument
+        windowRepository.saveIntoDb()
 
-        val t = workspaceStrings
-        t[currentWorkspace] = currentWorkspaceState
-        currentWorkspace = t.size
-        windowControl.windowRepository.clear()
-        windowControl.windowRepository.setDefaultActiveWindow()
-        t.add(currentWorkspaceState)
-        workspaceStrings = t
-        openWorkspace(currentWorkspaceState)
-        windowControl.activeWindowPageManager.setCurrentDocument(currentDocument)
+        val newWorkspaceEntity = WorkspaceEntities.Workspace(
+            newWorkspaceName, 0, windowRepository.textDisplaySettings, windowRepository.windowBehaviorSettings
+        ).apply {
+            id = dao.insertWorkspace(this)
+        }
 
-        invalidateOptionsMenu()
+        currentWorkspaceId = newWorkspaceEntity.id
+        pageControl.currentPageManager.currentBible.setCurrentDocument(defaultDocument)
     }
 
     private fun cloneWorkspace() {
-        val t = workspaceStrings
-        val current = currentWorkspaceState
-        t[currentWorkspace] = currentWorkspaceState
-        t.add(current)
-        currentWorkspace = t.size - 1
-        workspaceStrings = t
-        windowControl.windowRepository.name = ""
-        ABEventBus.getDefault().post(ToastEvent(currentWorkspaceName))
+        val newWorkspace = dao.cloneWorkspace(currentWorkspaceId, newWorkspaceName)
+        currentWorkspaceId = newWorkspace.id
+        ABEventBus.getDefault().post(ToastEvent(newWorkspace.name))
         invalidateOptionsMenu()
     }
 
     private fun chooseWorkspace() {
-        val workspaces = workspaceStrings
-
-        workspaces[currentWorkspace] = currentWorkspaceState
-        workspaceStrings = workspaces
+        windowRepository.saveIntoDb()
 
         val workspaceTitles = ArrayList<String>()
-        val pageManager = windowControl.windowRepository.currentPageManagerProvider.get()
-        for((idx, workspace) in workspaces.withIndex()) {
-            val windowRepositoryState = JSONObject(workspace)
-            val windows = windowRepositoryState.getJSONArray("windowState")
-            val name = windowRepositoryState.optString("name")
+        val pageManager = windowRepository.currentPageManagerProvider.get()
+        val workspaces = workspaces
+
+        for(workspace in workspaces) {
+            val windows = dao.windows(workspace.id)
+
+            val name = workspace.name
             val keyTitle = ArrayList<String>()
             val prevFullBookNameValue = BookName.isFullBookName()
             BookName.setFullBookName(false)
-            for(i in 0 until windows.length()) {
-                pageManager.restoreState(windows.getJSONObject(i).getJSONObject("pageManager"))
-                keyTitle.add("${pageManager.currentPage.singleKey.name} (${pageManager.currentPage.currentDocument.abbreviation})")
+
+            windows.forEach {
+                pageManager.restoreFrom(dao.pageManager(it.id))
+                keyTitle.add("${pageManager.currentPage.singleKey?.name} (${pageManager.currentPage.currentDocument?.abbreviation})")
             }
+
             BookName.setFullBookName(prevFullBookNameValue)
-            val text = if(!name.isEmpty())
+            val text = if(name.isNotEmpty())
                 getString(R.string.workspace_name_contents, name, keyTitle.joinToString(", "))
             else
                 keyTitle.joinToString(", ")
 
-            val prefix = if(currentWorkspace == idx) {
+            val prefix = if(currentWorkspaceId == workspace.id) {
                 "• ⭐ "
             } else "• "
 
@@ -545,9 +541,9 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
                 newWorkspace()
             }
             .setAdapter(adapter) {_, which ->
-                if(currentWorkspace != which) {
-                    currentWorkspace = which
-                    openWorkspace(workspaces[which])
+                val now = workspaces[which]
+                if(currentWorkspaceId != now.id) {
+                    currentWorkspaceId = now.id
                 }
             }
             .setNeutralButton(R.string.cancel, null)
@@ -561,70 +557,79 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
     }
 
     private fun previousWorkspace() {
-        val workspaces = workspaceStrings
+        val workspaces = workspaces
         if(workspaces.size < 2) return
-        workspaces[currentWorkspace] = currentWorkspaceState
-        workspaceStrings = workspaces
-        currentWorkspace = if(currentWorkspace > 0) currentWorkspace - 1 else workspaces.size -1
-        openWorkspace(workspaces[currentWorkspace])
+        windowRepository.saveIntoDb()
+        val currentWorkspacePos = workspaces.indexOf(workspaces.find {it.id == currentWorkspaceId})
+
+        currentWorkspaceId = if(currentWorkspacePos > 0) workspaces[currentWorkspacePos - 1].id else workspaces[workspaces.size -1].id
     }
 
     private fun nextWorkspace() {
-        val workspaces = workspaceStrings
+        val workspaces = workspaces
         if(workspaces.size < 2) return
-        workspaces[currentWorkspace] = currentWorkspaceState
-        workspaceStrings = workspaces
-        currentWorkspace = if(currentWorkspace < workspaces.size - 1) currentWorkspace + 1 else 0
-        openWorkspace(workspaces[currentWorkspace])
+        windowRepository.saveIntoDb()
+
+        val currentWorkspacePos = workspaces.indexOf(workspaces.find {it.id == currentWorkspaceId})
+
+        currentWorkspaceId = if(currentWorkspacePos < workspaces.size - 1) workspaces[currentWorkspacePos + 1].id else workspaces[0].id
     }
 
-    @Serializable class WorkspaceStrings(val data: ArrayList<String>)
-
-    private val currentWorkspaceState get() = windowControl.windowRepository.dumpState()
-
-    private var workspaceStrings: ArrayList<String>
-        get() {
-            val workspaceSerialized = preferences.getString("tabs", null) ?: return arrayListOf(currentWorkspaceState)
-            return Json(JSON_CONFIG).parse(WorkspaceStrings.serializer(), workspaceSerialized).data
-        }
-        set(value) =
-            preferences.edit().putString("tabs", Json(JSON_CONFIG).stringify(WorkspaceStrings.serializer(), WorkspaceStrings(value))).apply()
-
     private val haveWorkspaces: Boolean get() = numWorkspaces > 1
-    private val numWorkspaces: Int get() = workspaceStrings.size
+    private val numWorkspaces: Int get() = workspaces.size
 
-    private var currentWorkspace: Int
-        get() = preferences.getInt("currentTab", 0)
-        set(newValue) = preferences.edit().putInt("currentTab", newValue).apply()
+    private var currentWorkspaceId
+        get() = windowRepository.id
+        set(value) {
+            windowRepository.loadFromDb(value)
 
-   private fun getItemOptions(itemId: Int) =  when(itemId) {
-        R.id.showBookmarksOption -> TextContentMenuItemPreference("show_bookmarks_pref", true)
-        R.id.redLettersOption -> TextContentMenuItemPreference("red_letter_pref", false)
-        R.id.sectionTitlesOption -> TextContentMenuItemPreference("section_title_pref", true)
-        R.id.verseNumbersOption -> TextContentMenuItemPreference("show_verseno_pref", true)
-        R.id.versePerLineOption -> TextContentMenuItemPreference("verse_per_line_pref", false)
-        R.id.footnoteOption -> TextContentMenuItemPreference("show_notes_pref", false)
-        R.id.myNotesOption -> TextContentMenuItemPreference("show_mynotes_pref", true)
-        R.id.showStrongsOption -> StrongsMenuItemPreference()
-        R.id.morphologyOption -> MorphologyMenuItemPreference()
-        R.id.autoFullscreen -> AutoFullscreenMenuItemPreference()
+            preferences.edit().putLong("current_workspace_id", windowRepository.id).apply()
+            documentViewManager.resetView()
+            windowControl.windowSync.reloadAllWindows()
+
+            ABEventBus.getDefault().post(ToastEvent(windowRepository.name))
+
+            invalidateOptionsMenu()
+            updateTitle()
+            updateToolbar()
+        }
+
+    private fun getItemOptions(itemId: Int) =  when(itemId) {
+        R.id.textOptionsSubMenu -> SubMenuMenuItemPreference(false)
+
+        R.id.showBookmarksOption -> WorkspaceTextContentMenuItemPreference(TextDisplaySettings.Id.BOOKMARKS)
+        R.id.redLettersOption -> WorkspaceTextContentMenuItemPreference(TextDisplaySettings.Id.REDLETTERS)
+        R.id.sectionTitlesOption -> WorkspaceTextContentMenuItemPreference(TextDisplaySettings.Id.SECTIONTITLES)
+        R.id.verseNumbersOption -> WorkspaceTextContentMenuItemPreference(TextDisplaySettings.Id.VERSENUMBERS)
+        R.id.versePerLineOption -> WorkspaceTextContentMenuItemPreference(TextDisplaySettings.Id.VERSEPERLINE)
+        R.id.footnoteOption -> WorkspaceTextContentMenuItemPreference(TextDisplaySettings.Id.FOOTNOTES)
+        R.id.myNotesOption -> WorkspaceTextContentMenuItemPreference(TextDisplaySettings.Id.MYNOTES)
+
+        R.id.showStrongsOption -> WorkspaceStrongsMenuItemPreference()
+        R.id.morphologyOption -> WorkspaceMorphologyMenuItemPreference()
+        R.id.fontSize -> WorkspaceFontSizeItem()
+        R.id.splitMode -> SplitModeMenuItemPreference()
+
         R.id.tiltToScroll -> TiltToScrollMenuItemPreference()
         R.id.nightMode -> NightModeMenuItemPreference()
-        R.id.splitMode -> SplitModeMenuItemPreference()
-        R.id.textOptionsSubMenu -> SubMenuMenuItemPreference(true)
+
         R.id.workspacesSubMenu -> WorkspacesSubmenu()
         R.id.newWorkspace -> CommandItem({newWorkspace()})
         R.id.cloneWorkspace -> CommandItem({cloneWorkspace()})
         R.id.deleteWorkspace -> CommandItem({deleteWorkspace()}, haveWorkspaces)
-        R.id.renameWorkspace -> CommandItem({renameWorkspace()}, haveWorkspaces)
-        R.id.switchToWorkspace -> CommandItem({chooseWorkspace()}, haveWorkspaces)
+        R.id.renameWorkspace -> CommandItem({renameWorkspace()})
+        R.id.switchToWorkspace -> CommandItem({chooseWorkspace()})
+
         else -> throw RuntimeException("Illegal menu item")
-   }
+    }
 
     private val preferences = CommonUtils.sharedPreferences
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_bible_options_menu, menu)
+        val subMenu = menu.findItem(R.id.textOptionsSubMenu).subMenu
+        menuInflater.inflate(R.menu.text_options_menu, subMenu)
+
         fun handleMenu(menu: Menu) {
             for(item in menu.children) {
                 val itmOptions = getItemOptions(item.itemId)
@@ -662,7 +667,7 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
     }
 
     private val documentTitleText: String
-        get() = pageControl.currentPageManager.currentPage.currentDocument.name
+        get() = pageControl.currentPageManager.currentPage.currentDocument?.name?:""
 
     class KeyIsNull: Exception()
 
@@ -670,7 +675,7 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
         get() {
             val doc = pageControl.currentPageManager.currentPage.currentDocument
             var key = pageControl.currentPageManager.currentPage.key
-            if(doc.bookCategory == BookCategory.BIBLE) {
+            if(doc?.bookCategory == BookCategory.BIBLE) {
                 key = pageControl.currentBibleVerse
                 if(key.verse == 0) {
                     key = Verse(key.versification, key.book, key.chapter, 1)
@@ -681,7 +686,7 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
 
     val bibleOverlayText: String
         get() {
-            val bookName = pageControl.currentPageManager.currentPage.currentDocument.abbreviation
+            val bookName = pageControl.currentPageManager.currentPage.currentDocument?.abbreviation
             BookName.setFullBookName(false)
             val text = pageTitleText
             BookName.setFullBookName(true)
@@ -693,9 +698,10 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
             pageTitle.text = pageTitleText
             val layout = pageTitle.layout
             if(layout!= null && layout.lineCount > 0 && layout.getEllipsisCount(0) > 0) {
+                val oldValue = BookName.isFullBookName()
                 BookName.setFullBookName(false)
                 pageTitle.text = pageTitleText
-                BookName.setFullBookName(true)
+                BookName.setFullBookName(oldValue)
             }
         } catch (e: KeyIsNull) {
             Log.e(TAG, "Key is null, not updating", e)
@@ -809,7 +815,7 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
         }
 
         menu.setOnMenuItemClickListener { item ->
-            windowControl.activeWindow.pageManager.setCurrentDocument(docs[item.itemId])
+            setCurrentDocument(docs[item.itemId])
             true
         }
         menu.show()
@@ -818,6 +824,11 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
 
     private fun setCurrentDocument(book: Book?) {
         windowControl.activeWindow.pageManager.setCurrentDocument(book)
+        if(book != null) {
+            val bookCategory = book.bookCategory
+            // see net.bible.android.control.page.CurrentPageBase.getDefaultBook
+            CommonUtils.sharedPreferences.edit().putString("default-${bookCategory.name}", book.initials).apply()
+        }
     }
 
     class FullScreenEvent(val isFullScreen: Boolean)
@@ -865,7 +876,7 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
         updateToolbar()
     }
 
-    private val sharedActivityState = SharedActivityState.getInstance()
+    private val sharedActivityState = SharedActivityState.instance
 
     private fun hideSystemUI() {
         var uiFlags = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -883,6 +894,12 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
 
     private fun showSystemUI() {
         var uiFlags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!ScreenSettings.nightMode) {
+                uiFlags = uiFlags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            }
+        }
 
         // only need to un-hide navigation bar in portrait mode
         if (CommonUtils.isPortrait)
@@ -923,6 +940,7 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
 
     override fun onDestroy() {
         super.onDestroy()
+        beforeDestroy()
         ABEventBus.getDefault().unregister(this)
     }
 
@@ -931,6 +949,13 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
         if (menuInfo != null) {
             val inflater = menuInflater
             inflater.inflate(R.menu.link_context_menu, menu)
+            val openLinksInSpecialWindowByDefault = preferences.getBoolean("open_links_in_special_window_pref", true)
+            val item =
+                if(openLinksInSpecialWindowByDefault)
+                    menu.findItem(R.id.open_link_in_special_window)
+                else
+                    menu.findItem(R.id.open_link_in_this_window)
+            item.isVisible = false
         }
     }
 
@@ -975,20 +1000,41 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
 
     override fun onScreenTurnedOn() {
         super.onScreenTurnedOn()
+        ScreenSettings.refreshNightMode()
         refreshIfNightModeChange()
         documentViewManager.documentView.onScreenTurnedOn()
     }
 
-    /**
-     * if using auto night mode then may need to refresh
-     */
-    private fun refreshIfNightModeChange() {
+    var currentNightMode: Boolean = false
+
+    private fun beforeDestroy() {
+        bibleViewFactory.clear()
+        documentViewManager.destroy()
+        documentWebViewBuilder.destroy()
+        bibleActionBarManager.destroy()
+    }
+
+    fun refreshIfNightModeChange(): Boolean {
         // colour may need to change which affects View colour and html
         // first refresh the night mode setting using light meter if appropriate
-        if (ScreenSettings.isNightModeChanged) {
-            // then update text if colour changed
-            documentViewManager.documentView.changeBackgroundColour()
-            PassageChangeMediator.getInstance().forcePageUpdate()
+        ScreenSettings.checkMonitoring()
+        val isNightMode = ScreenSettings.nightMode
+        if (currentNightMode != isNightMode) {
+            if(!windowRepository.isBusy) {
+                recreate()
+                currentNightMode = isNightMode
+                return true
+            } else {
+                // Cancel night mode setting
+                ScreenSettings.setLastNightMode(currentNightMode)
+            }
+        }
+        return false
+    }
+
+    fun onEvent(event: ScreenSettings.NightModeChanged) {
+        if(CurrentActivityHolder.getInstance().currentActivity == this) {
+            refreshIfNightModeChange()
         }
     }
 
@@ -1006,13 +1052,14 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
             showSystemUI()
     }
 
-    class ConfigurationChanged
+    class ConfigurationChanged(val configuration: Configuration)
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         updateToolbar()
-        ABEventBus.getDefault().post(ConfigurationChanged())
+        ABEventBus.getDefault().post(ConfigurationChanged(newConfig))
         windowControl.windowSizesChanged()
+        refreshIfNightModeChange()
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
@@ -1038,9 +1085,16 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
                 if (resultCode == Activity.RESULT_OK) {
                     CurrentActivityHolder.getInstance().currentActivity = this
                     Dialogs.getInstance().showMsg(R.string.restore_confirmation, true) {
+                        ABEventBus.getDefault().post(ToastEvent(getString(R.string.loading_backup)))
                         thread {
                             val inputStream = contentResolver.openInputStream(data!!.data!!)
-                            backupControl.restoreDatabaseViaIntent(inputStream!!)
+                            if(backupControl.restoreDatabaseViaIntent(inputStream!!)) {
+                                windowControl.windowSync.setResyncRequired()
+                                runOnUiThread {
+                                    bibleViewFactory.clear()
+                                    currentWorkspaceId = 0
+                                }
+                            }
                         }
                     }
                 }
@@ -1060,8 +1114,12 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
                         pageControl.currentPageManager.setCurrentDocument(doc)
                     }
 
-                    windowControl.activeWindowPageManager.currentPage.key = verse
+                    windowControl.activeWindowPageManager.currentPage.setKey(verse)
                     return
+                }
+                if(data?.component?.className == MyNotes::class.java.name) {
+                    invalidateOptionsMenu()
+                    documentViewManager.resetView()
                 }
             }
             IntentHelper.UPDATE_SUGGESTED_DOCUMENTS_ON_FINISH -> {
@@ -1085,16 +1143,6 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
-            BACKUP_SAVE_REQUEST -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                backupControl.backupDatabase()
-            } else {
-                Dialogs.getInstance().showMsg(R.string.error_occurred)
-            }
-            BACKUP_RESTORE_REQUEST -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                backupControl.restoreDatabase()
-            } else {
-                Dialogs.getInstance().showMsg(R.string.error_occurred)
-            }
             SDCARD_READ_REQUEST -> if (grantResults.isNotEmpty()) {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     documentControl.enableManualInstallFolder()
@@ -1108,13 +1156,11 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
 
     fun preferenceSettingsChanged() {
         documentViewManager.documentView.applyPreferenceSettings()
-        PassageChangeMediator.getInstance().forcePageUpdate()
-        requestSdcardPermission()
-        invalidateOptionsMenu()
-        windowControl.windowRepository.minimisedScreens.forEach {
-            it.initialized = false
+        if(!refreshIfNightModeChange()) {
+            requestSdcardPermission()
+            invalidateOptionsMenu()
+            ABEventBus.getDefault().post(SynchronizeWindowsEvent(true))
         }
-        ABEventBus.getDefault().post(SynchronizeWindowsEvent())
     }
 
     private fun requestSdcardPermission() {
@@ -1173,9 +1219,6 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
         // disable some options depending on document type
         windowControl.activeWindowPageManager.currentPage.updateOptionsMenu(menu)
 
-        // if there is no backup file then disable the restore menu item
-        backupControl.updateOptionsMenu(menu)
-
         // must return true for menu to be displayed
         return true
     }
@@ -1220,21 +1263,10 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        EventSender.getInstance(applicationContext).onStart(this)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        EventSender.getInstance(applicationContext).onStop(this)
-    }
-
 
     companion object {
         lateinit var mainBibleActivity: MainBibleActivity
-        internal const val BACKUP_SAVE_REQUEST = 0
-        internal const val BACKUP_RESTORE_REQUEST = 1
+        var initialized = false
         private const val SDCARD_READ_REQUEST = 2
 
         // ActivityBase.STD_REQUEST_CODE = 1

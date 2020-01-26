@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -18,10 +18,8 @@
 
 package net.bible.android.control.page.window
 
-import android.view.Menu
-import net.bible.android.activity.R
+import android.util.Log
 import net.bible.android.control.ApplicationScope
-import net.bible.android.control.PassageChangeMediator
 import net.bible.android.control.event.EventManager
 import net.bible.android.control.event.passage.SynchronizeWindowsEvent
 import net.bible.android.control.event.passage.CurrentVerseChangedEvent
@@ -30,7 +28,6 @@ import net.bible.android.control.event.window.WindowSizeChangedEvent
 import net.bible.android.control.page.ChapterVerse
 import net.bible.android.control.page.CurrentPageManager
 import net.bible.android.control.page.window.WindowLayout.WindowState
-import net.bible.service.common.CommonUtils
 import net.bible.service.common.Logger
 
 import org.crosswire.jsword.book.Book
@@ -94,43 +91,6 @@ open class WindowControl @Inject constructor(
         eventManager.register(this)
     }
 
-    /**
-     * Add the Window sub-menu resource which is not included in the main.xml for the main menu
-     * Set the synchronised checkbox in the app menu before displayed
-     * Disable various menu items if links window selected
-     */
-    fun updateOptionsMenu(menu: Menu) {
-        // when updating main menu rather than Window options menu
-
-        val synchronisedMenuItem = menu.findItem(R.id.windowSynchronise)
-        val moveFirstMenuItem = menu.findItem(R.id.windowMoveFirst)
-        val closeMenuItem = menu.findItem(R.id.windowClose)
-        val minimiseMenuItem = menu.findItem(R.id.windowMinimise)
-        val maximiseMenuItem = menu.findItem(R.id.windowMaximise)
-        val window = activeWindow
-
-        if (synchronisedMenuItem != null && moveFirstMenuItem != null) {
-            // set synchronised & maximised checkbox state
-            synchronisedMenuItem.isChecked = window.isSynchronised
-            maximiseMenuItem.isChecked = window.isMaximised
-
-            // the dedicated links window cannot be treated as a normal window
-            val isDedicatedLinksWindowActive = isActiveWindow(windowRepository.dedicatedLinksWindow)
-            synchronisedMenuItem.isEnabled = !isDedicatedLinksWindowActive
-            moveFirstMenuItem.isEnabled = !isDedicatedLinksWindowActive
-
-            // cannot close last normal window
-            closeMenuItem.isEnabled = isWindowRemovable(window)
-            minimiseMenuItem.isEnabled = isWindowMinimisable(window)
-
-            // if window is already first then cannot promote
-            val visibleWindows = windowRepository.visibleWindows
-            if (visibleWindows.size > 0 && window == visibleWindows[0]) {
-                moveFirstMenuItem.isEnabled = false
-            }
-        }
-    }
-
     fun isActiveWindow(window: Window): Boolean {
         return window == windowRepository.activeWindow
     }
@@ -140,23 +100,27 @@ open class WindowControl @Inject constructor(
      */
     fun showLinkUsingDefaultBible(key: Key) {
         val linksWindow = windowRepository.dedicatedLinksWindow
-
         val currentBiblePage = linksWindow.pageManager.currentBible
 
-        val defaultBible: Book
+        val isBible = windowRepository.activeWindow.pageManager.isBibleShown
+        val bibleDoc = windowRepository.activeWindow.pageManager.currentBible.currentDocument
 
         // default either to links window bible or if closed then active window bible
-        defaultBible = if (currentBiblePage.isCurrentDocumentSet) {
+        val defaultBible = if (currentBiblePage.isCurrentDocumentSet) {
             currentBiblePage.currentDocument
         } else {
-            windowRepository.firstVisibleWindow.pageManager.currentBible.currentDocument
+            windowRepository.activeWindow.pageManager.currentBible.currentDocument
         }
-
-        showLink(defaultBible, key)
+        if(defaultBible == null) {
+            Log.e(TAG, "Default bible is null! Can't show link.")
+            return
+        }
+        showLink(if (isBible && bibleDoc != null) bibleDoc else defaultBible, key)
     }
 
     fun showLink(document: Book, key: Key) {
         val linksWindow = windowRepository.dedicatedLinksWindow
+        linksWindow.restoreOngoing = true
         val linksWindowWasVisible = linksWindow.isVisible
 
         linksWindow.initialisePageStateIfClosed(activeWindow)
@@ -165,34 +129,35 @@ open class WindowControl @Inject constructor(
         // window otherwise BibleContentMediator logic does not refresh that window
         windowRepository.activeWindow = linksWindow
 
-        linksWindow.pageManager.setCurrentDocumentAndKey(document, key)
 
         // redisplay the current page
         if (!linksWindowWasVisible) {
-            linksWindow.justRestored = true
             linksWindow.windowLayout.state = WindowState.SPLIT
+        }
+
+        linksWindow.pageManager.setCurrentDocumentAndKey(document, key)
+
+        if (!linksWindowWasVisible) {
             eventManager.post(NumberOfWindowsChangedEvent(windowChapterVerseMap))
         }
+        linksWindow.restoreOngoing = false
     }
 
 
     fun addNewWindow(): Window {
+        val oldActiveWindow = activeWindow
         val window = windowRepository.addNewWindow()
 
         // default state to active window
         if (!isActiveWindow(window)) {
-            val activeWindow = activeWindow
-            val activeWindowPageState = activeWindow.pageManager.stateJson
-            window.pageManager.restoreState(activeWindowPageState)
-            window.isSynchronised = activeWindow.isSynchronised
+            window.pageManager.restoreFrom(oldActiveWindow.pageManager.entity)
+            window.isSynchronised = oldActiveWindow.isSynchronised
             if (windowRepository.isMaximisedState) {
-                this.activeWindow = window
-                PassageChangeMediator.getInstance().forcePageUpdate()
+                activeWindow = window
             }
         }
 
-        windowSync.setResynchRequired(true)
-        windowSync.synchronizeScreens()
+        window.updateText()
 
         // redisplay the current page
         eventManager.post(NumberOfWindowsChangedEvent(windowChapterVerseMap))
@@ -206,8 +171,9 @@ open class WindowControl @Inject constructor(
         window.isSynchronised = false
         pageManager.setCurrentDocumentAndKey(document, key)
 
-        windowSync.setResynchRequired(true)
-        windowSync.synchronizeScreens()
+        if (windowRepository.isMaximisedState) {
+            activeWindow = window
+        }
 
         // redisplay the current page
         eventManager.post(NumberOfWindowsChangedEvent(windowChapterVerseMap))
@@ -215,17 +181,8 @@ open class WindowControl @Inject constructor(
         return window
     }
 
-
-    /**
-     * Minimise window if possible
-     */
-    fun minimiseCurrentWindow() {
-        minimiseWindow(activeWindow)
-    }
-
     fun minimiseWindow(window: Window) {
         if (isWindowMinimisable(window)) {
-            window.bibleView?.clear()
             windowRepository.minimise(window)
 
             // redisplay the current page
@@ -234,13 +191,12 @@ open class WindowControl @Inject constructor(
     }
 
     fun maximiseWindow(window: Window) {
-        windowRepository.minimisedScreens.forEach {
+        windowRepository.minimisedWindows.forEach {
             it.wasMinimised = true
         }
         windowRepository.visibleWindows.forEach {
             if (it != window) {
                 it.windowLayout.state = WindowState.MINIMISED
-                it.bibleView?.clear()
             }
         }
 
@@ -260,7 +216,7 @@ open class WindowControl @Inject constructor(
     fun unmaximiseWindow(window: Window) {
         window.isMaximised = false
 
-        windowRepository.minimisedScreens.forEach {
+        windowRepository.minimisedWindows.forEach {
             it.windowLayout.state = if(it.wasMinimised) WindowState.MINIMISED else WindowState.SPLIT
             it.wasMinimised = false
         }
@@ -268,18 +224,14 @@ open class WindowControl @Inject constructor(
         // redisplay the current page
         eventManager.post(NumberOfWindowsChangedEvent(windowChapterVerseMap))
 
-        windowSync.setResynchRequired(true)
-        windowSync.synchronizeScreens()
-    }
-
-    fun closeCurrentWindow() {
-        closeWindow(activeWindow)
+        windowSync.synchronizeWindows()
+        windowSync.reloadAllWindows()
     }
 
     fun closeWindow(window: Window) {
 
         if (isWindowRemovable(window)) {
-            logger.debug("Closing window " + window.screenNo)
+            logger.debug("Closing window " + window.id)
             windowRepository.close(window)
 
             val visibleWindows = windowRepository.visibleWindows
@@ -287,16 +239,15 @@ open class WindowControl @Inject constructor(
 
             // redisplay the current page
             eventManager.post(NumberOfWindowsChangedEvent(windowChapterVerseMap))
-            if (!activeWindow.initialized)
-                PassageChangeMediator.getInstance().forcePageUpdate()
+            windowSync.reloadAllWindows()
         }
     }
 
-    private fun isWindowMinimisable(window: Window): Boolean {
+    fun isWindowMinimisable(window: Window): Boolean {
         return !windowRepository.isMaximisedState && isWindowRemovable(window) && !window.isLinksWindow
     }
 
-    private fun isWindowRemovable(window: Window): Boolean {
+    fun isWindowRemovable(window: Window): Boolean {
         if(windowRepository.isMaximisedState && windowRepository.minimisedAndMaximizedScreens.size > 1) return true
         var normalWindows = windowRepository.visibleWindows.size
         if (windowRepository.dedicatedLinksWindow.isVisible) {
@@ -308,53 +259,29 @@ open class WindowControl @Inject constructor(
 
     fun restoreWindow(window: Window) {
         if (window == activeWindow) return
-        window.justRestored = true
-
+        window.restoreOngoing = true
         var switchingMaximised = false
         windowRepository.maximisedScreens.forEach {
             switchingMaximised = true
             it.windowLayout.state = WindowState.MINIMISED
-            it.bibleView?.clear()
         }
 
         window.isMaximised = switchingMaximised
 
         // causes BibleViews to be created and laid out
         eventManager.post(NumberOfWindowsChangedEvent(windowChapterVerseMap))
-        windowSync.setResynchRequired(true)
-
-        windowSync.synchronizeScreens()
+        windowSync.synchronizeWindows()
+        windowSync.reloadAllWindows()
 
         if (switchingMaximised) {
             activeWindow = window
-            if (!activeWindow.initialized)
-                PassageChangeMediator.getInstance().forcePageUpdate()
         }
-    }
-
-    fun synchroniseCurrentWindow() {
-        activeWindow.isSynchronised = true
-
-        windowSync.setResynchRequired(true)
-        windowSync.synchronizeScreens()
-    }
-
-    fun unsynchroniseCurrentWindow() {
-        activeWindow.isSynchronised = false
+        window.restoreOngoing = false
     }
 
     /*
 	 * Move the current window to first
 	 */
-    fun moveCurrentWindowToFirst() {
-        val window = activeWindow
-
-        windowRepository.moveWindowToPosition(window, 0)
-
-        // redisplay the current page
-        eventManager.post(NumberOfWindowsChangedEvent(windowChapterVerseMap))
-    }
-
 
     /** screen orientation has changed  */
     fun orientationChange() {
@@ -363,16 +290,17 @@ open class WindowControl @Inject constructor(
     }
 
     fun onEvent(event: CurrentVerseChangedEvent) {
-        windowSync.synchronizeScreens(event.window)
+        windowSync.synchronizeWindows(event.window)
     }
 
     fun onEvent(event: SynchronizeWindowsEvent) {
-        if (event.syncAll) {
-            windowSync.synchronizeAllScreens()
+        if(event.forceSyncAll) {
+            windowSync.setResyncRequired()
         } else {
-            windowSync.setResynchRequired(true)
-            windowSync.synchronizeScreens()
+            windowSync.setResyncBiblesRequired()
         }
+        if(activeWindowPageManager.isMyNoteShown) return
+        windowSync.reloadAllWindows()
     }
 
     fun isSeparatorMoving(): Boolean {
@@ -395,9 +323,6 @@ open class WindowControl @Inject constructor(
         this.isSeparatorMoving = isSeparatorMoving
 
         val isMoveFinished = !isSeparatorMoving
-        if (isMoveFinished && !CommonUtils.isSplitVertically) {
-            windowSync.setResynchRequired(true)
-        }
 
         eventManager.post(WindowSizeChangedEvent(isMoveFinished, windowChapterVerseMap))
     }
@@ -407,15 +332,36 @@ open class WindowControl @Inject constructor(
             // need to layout multiple windows differently
             orientationChange()
         }
-        // essentially if the current page is Bible then we need to recalculate verse offsets
-        // if not then don't redisplay because it would force the page to the top which would be annoying if you are half way down a gen book page
-        else if (!activeWindowPageManager.currentPage.isSingleKey) {
-            // force a recalculation of verse offsets
-            PassageChangeMediator.getInstance().forcePageUpdate()
+    }
+
+    fun setMaximized(window: Window, value: Boolean) {
+        if(value == window.isMaximised) return
+        if(value) {
+            maximiseWindow(window)
+        } else {
+            unmaximiseWindow(window)
         }
+    }
+
+    fun setSynchronised(window: Window, value: Boolean) {
+        if(value == window.isSynchronised) return
+        if(value) {
+            window.isSynchronised = true
+            windowSync.synchronizeWindows()
+        } else {
+            window.isSynchronised = false
+        }
+    }
+
+    fun moveWindow(window: Window, position: Int) {
+        windowRepository.moveWindowToPosition(window, position)
+
+        // redisplay the current page
+        eventManager.post(NumberOfWindowsChangedEvent(windowChapterVerseMap))
     }
 
     companion object {
         var SCREEN_SETTLE_TIME_MILLIS = 1000
+        const val TAG = "WindowControl"
     }
 }

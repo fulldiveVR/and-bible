@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -21,7 +21,6 @@ package net.bible.android.control.backup
 import android.app.Activity
 import android.os.Environment
 import android.util.Log
-import android.view.Menu
 
 import net.bible.android.BibleApplication
 import net.bible.android.SharedConstants
@@ -31,11 +30,15 @@ import net.bible.android.control.event.ABEventBus
 import net.bible.android.control.event.passage.SynchronizeWindowsEvent
 import net.bible.android.view.activity.base.Dialogs
 import net.bible.service.common.FileManager
-import net.bible.service.db.CommonDatabaseHelper
 
 import android.content.Intent
+import android.database.sqlite.SQLiteDatabase
 import androidx.core.content.FileProvider
 import net.bible.android.activity.BuildConfig
+import net.bible.android.database.DATABASE_VERSION
+import net.bible.service.db.DATABASE_NAME
+import net.bible.service.db.DatabaseContainer
+import net.bible.service.db.DatabaseContainer.db
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -49,58 +52,32 @@ import javax.inject.Inject
  */
 @ApplicationScope
 class BackupControl @Inject constructor() {
-
-    /** return true if a backup has been done and the file is on the sd card.
-     */
-    private val isBackupFileExists: Boolean
-        get() = File(SharedConstants.BACKUP_DIR, CommonDatabaseHelper.DATABASE_NAME).exists()
-
-    fun updateOptionsMenu(menu: Menu) {
-        // always allow backup and restore to be attempted
-    }
-
-    /** backup database to sd card
-     */
-    fun backupDatabase() {
-        CommonDatabaseHelper.sync()
-        val ok = FileManager.copyFile(CommonDatabaseHelper.DATABASE_NAME, internalDbDir, SharedConstants.BACKUP_DIR)
-
-        if (ok) {
-            Log.d(TAG, "Copied database to SD card successfully")
-            Dialogs.getInstance().showMsg(R.string.backup_success, SharedConstants.BACKUP_DIR.name)
-        } else {
-            Log.e(TAG, "Error copying database to SD card")
-            Dialogs.getInstance().showErrorMsg(R.string.error_occurred)
-        }
-    }
-
     /** backup database to custom target (email, drive etc.)
      */
     fun backupDatabaseViaIntent(callingActivity: Activity) {
-        CommonDatabaseHelper.sync()
-        val fileName = CommonDatabaseHelper.DATABASE_NAME
+        db.sync()
+        val fileName = DATABASE_NAME
         internalDbBackupDir.mkdirs()
         FileManager.copyFile(fileName, internalDbDir, internalDbBackupDir)
-
 		val subject = callingActivity.getString(R.string.backup_email_subject)
 		val message = callingActivity.getString(R.string.backup_email_message)
         val f = File(internalDbBackupDir, fileName)
         val uri = FileProvider.getUriForFile(callingActivity, BuildConfig.APPLICATION_ID + ".provider", f)
-		val email = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+		val email = Intent(Intent.ACTION_SEND).apply {
+            putExtra(Intent.EXTRA_STREAM, uri)
             putExtra(Intent.EXTRA_SUBJECT, subject)
             putExtra(Intent.EXTRA_TEXT, message)
-            putParcelableArrayListExtra(Intent.EXTRA_STREAM, arrayListOf(uri))
-            type = "text/*"
+            type = "application/x-sqlite3"
         }
-		val chooserIntent = Intent.createChooser(email, "Send")
+		val chooserIntent = Intent.createChooser(email, callingActivity.getString(R.string.send_backup_file))
         chooserIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 		callingActivity.startActivity(chooserIntent)
     }
 
     /** backup database from custom source
      */
-    fun restoreDatabaseViaIntent(inputStream: InputStream) {
-        val fileName = CommonDatabaseHelper.DATABASE_NAME
+    fun restoreDatabaseViaIntent(inputStream: InputStream): Boolean {
+        val fileName = DATABASE_NAME
         internalDbBackupDir.mkdirs()
         val f = File(internalDbBackupDir, fileName)
         var ok = false
@@ -111,12 +88,16 @@ class BackupControl @Inject constructor() {
             out.write(header)
             out.write(inputStream.readBytes())
             out.close()
-            BibleApplication.application.deleteDatabase(CommonDatabaseHelper.DATABASE_NAME)
-            ok = FileManager.copyFile(fileName, internalDbBackupDir, internalDbDir)
+            val sqlDb = SQLiteDatabase.openDatabase(f.path, null, SQLiteDatabase.OPEN_READONLY)
+            if(sqlDb.version <= DATABASE_VERSION) {
+                DatabaseContainer.reset()
+                BibleApplication.application.deleteDatabase(DATABASE_NAME)
+                ok = FileManager.copyFile(fileName, internalDbBackupDir, internalDbDir)
+            }
+            sqlDb.close()
         }
 
         if (ok) {
-            CommonDatabaseHelper.reset()
             ABEventBus.getDefault().post(SynchronizeWindowsEvent(true))
             Log.d(TAG, "Restored database successfully")
             Dialogs.getInstance().showMsg(R.string.restore_success)
@@ -124,29 +105,8 @@ class BackupControl @Inject constructor() {
             Log.e(TAG, "Error restoring database")
             Dialogs.getInstance().showErrorMsg(R.string.restore_unsuccessfull)
         }
-    }
-
-    /** restore database from sd card
-     */
-    fun restoreDatabase() {
-        if (!isBackupFileExists) {
-            Dialogs.getInstance().showErrorMsg(R.string.error_no_backup_file)
-        } else {
-            Dialogs.getInstance().showMsg(R.string.restore_confirmation, true) {
-                BibleApplication.application.deleteDatabase(CommonDatabaseHelper.DATABASE_NAME)
-                val ok = FileManager.copyFile(CommonDatabaseHelper.DATABASE_NAME, SharedConstants.BACKUP_DIR, internalDbDir)
-
-                if (ok) {
-                    CommonDatabaseHelper.reset()
-                    ABEventBus.getDefault().post(SynchronizeWindowsEvent(true))
-                    Log.d(TAG, "Copied database from SD card successfully")
-                    Dialogs.getInstance().showMsg(R.string.restore_success, SharedConstants.BACKUP_DIR.name)
-                } else {
-                    Log.e(TAG, "Error copying database from SD card")
-                    Dialogs.getInstance().showErrorMsg(R.string.error_occurred)
-                }
-            }
-        }
+        f.delete()
+        return ok
     }
 
     companion object {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -205,7 +205,7 @@ public class Bookmarks extends ListActivityBase implements ListActionModeHelper.
 
 	private void delete(List<BookmarkDto> bookmarks) {
 		for (BookmarkDto bookmark : bookmarks) {
-			bookmarkControl.deleteBookmark(bookmark);
+			bookmarkControl.deleteBookmark(bookmark, false);
 		}
 		loadBookmarkList();
 	}

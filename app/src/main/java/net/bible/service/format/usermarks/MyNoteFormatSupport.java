@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -54,11 +54,8 @@ public class MyNoteFormatSupport {
 		MyNoteDBAdapter db = new MyNoteDBAdapter();
 		List<MyNoteDto> myNoteList = null;
 		try {
-			db.open();
 			myNoteList = db.getMyNotesInBook(book);
-		} finally {
-			db.close();
-		}
+		} finally {}
 
 		// convert to required versification and check verse is in passage
 		List<Verse> versesInPassage = new ArrayList<>();

@@ -41,6 +41,7 @@ trackpada ali pomikom prsta preko ekrana</string>
   <string name="history">Zgodovina</string>
   <string name="speak">Govor</string>
   <string name="help">Pomoč</string>
+  <string name="other">Drugo</string>
   <string name="administration">Upravljanje</string>
   <string name="rate_application">Ocena &amp; Recenzija na Google Play</string>
   <string name="chooce_document">Zapri dokument</string>
@@ -93,6 +94,7 @@ trackpada ali pomikom prsta preko ekrana</string>
   <string name="prefs_night_mode_title">Nočni način</string>
   <string name="prefs_night_mode_summary">Za lažje branje v temi</string>
   <string name="prefs_night_mode_automatic">Avtomatsko</string>
+  <string name="prefs_night_mode_system">Sistem</string>
   <string name="prefs_navigate_to_verse_title">Usmeri do vrstice</string>
   <string name="prefs_navigate_to_verse_summary">Za izbiro odlomka izberi vrstico (in poglavje)</string>
   <string name="prefs_open_links_in_special_window_title">Povezave odpri v posebnem oknu</string>
@@ -143,7 +145,11 @@ trackpada ali pomikom prsta preko ekrana</string>
   <string name="download_refreshing_book_list">Osvežitev seznama razpoložljivih dokumentov</string>
   <string name="download_refresh_book_list_menu_item">Osveži</string>
   <string name="error_downloading">Pri prenosu se je zgodila napaka.  Prosim preverite vašo povezavo z internetom.</string>
-  <string name="no_internet_connection">Ne da se povezati na internet</string>
+  <string name="no_internet_connection">
+        Ni se mogoče povezati s shrambo modula Crosswire.
+        Strežnik morda ne deluje ali morda nimate internetne povezave.
+        Prosim, poskusite kasneje.
+    </string>
   <string name="storage_space_warning">Premalo lokalnega prostora za shranjevanje.</string>
   <string name="too_many_jobs">Izvaja se preveč opravil.  Prosim počakajte, da se jih nekaj dokonča in ponovno poskusite.</string>
   <string name="document_not_installed">Prosim prenesite \'%s\'</string>
@@ -160,10 +166,46 @@ trackpada ali pomikom prsta preko ekrana</string>
   <string name="rdg_plan_title">Načrt branja</string>
   <string name="rdg_plan_selector_title">Izberite Načrt branja</string>
   <string name="rdg_plan_day">Dan %s</string>
-  <string name="rdg_plan_set_start_jan1">Pričetek 1. Jan</string>
+  <string name="rdg_plan_set_start_date">Nastavi datum začetka...</string>
   <string name="done">Končano</string>
   <string name="reset">Reset</string>
-  <!--string name="rdg_plan_m1gospels">Through the Gospels in a month</string-->
+  <string name="reset_plan_question">Ali ste prepričani, da želite ponastaviti ta načrt?</string>
+  <string name="plan_duplicate_user_plan">
+        Na SD kartici je uporabnikov načrt branja
+        z istim imenom kot notranji načrt. Tega ni mogoče izpisati.
+        Preimenujte datoteko, pri čemer ohranite pripono .properties</string>
+  <string name="plan_name_y1ntpspr">NZ, Psalmi &amp; Pregovori v enem letu</string>
+  <string name="plan_description_y1ntpspr">
+        Z dovoljenjem spletnega časopisa HEARTLIGHT,
+        http://www.heartlight.org, permission granted
+    </string>
+  <string name="plan_name_y1ot1nt1_chronological">Kronološko v 1 letu skozi Biblijo</string>
+  <string name="plan_description_y1ot1nt1_chronological">
+        Načrt temelji na časovnem zaporedju dogodkih v Bibliji.
+        Časovno zaporedje je približno.</string>
+  <string name="plan_name_y1ot1nt1_OTandNT">V 1 letu hkrati SZ+NZ</string>
+  <string name="plan_description_y1ot1nt1_OTandNT">
+        Preberite Biblijo v 1 letu, s poglavji
+        v SZ in NZ.
+    </string>
+  <string name="plan_name_y1ot1nt1_OTthenNT">V 1 letu skozi Biblijo</string>
+  <string name="plan_description_y1ot1nt1_OTthenNT">
+         Preberite Biblijo v 1 letu, z začetkom pri Genezi
+         in zaključkom pri Razodetju. Najprej SZ, nato NZ.
+    </string>
+  <string name="plan_name_y1ot1nt2_mcheyne">M\'Cheyne v 1 letu skozi Biblijo, 4 poglavja na dan</string>
+  <string name="plan_description_y1ot1nt2_mcheyne">
+        Ta načrt temelji na sistemu branja M\'Cheyne,
+        s štirimi različnimi branji, za uporabo tako v družinskih kot osebnih predanostih. Vsak dan ima
+        dva odlomka iz Stare zaveze, enega iz Nove zaveze in enega iz Psalmov ali evangelijev. V enem letu
+        prebrete Staro zavezo in Novo zavezo in dvakrat Psalme.</string>
+  <string name="plan_name_y1ot6nt4_profHorner">Bralni načrt prof. Hornerja z 10 poglavji na dan</string>
+  <string name="plan_description_y1ot6nt4_profHorner">Z dovoljenjem prof. Hornerja</string>
+  <string name="plan_name_y2ot1ntps2">V 2 letih skozi Biblijo, NZ+Ps dvakrat</string>
+  <string name="plan_description_y2ot1ntps2">
+       V 2 letih preberete Biblijo, dvakrat preberete NZ in Psalme.
+       Z dovoljenjem Wholesome Words, http://www.wholesomewords.org/
+    </string>
   <!--Document context menu-->
   <string name="delete">Izbriši</string>
   <string name="delete_index">Izbriše indeks iskanja</string>
@@ -193,7 +235,7 @@ trackpada ali pomikom prsta preko ekrana</string>
   <string name="assign_labels">Dodaj oznake</string>
   <string name="new_label">Nova oznaka</string>
   <string name="label_name_prompt">Poimenuj</string>
-  <string name="label_unlabelled">Neoznačeno</string>
+  <string name="label_unlabelled">Neoznačeni</string>
   <string name="style">Stil</string>
   <!--Sort orders used for Bookmarks and MyNotes-->
   <string name="sort_by_date">Urejeno po datumu</string>
@@ -320,16 +362,30 @@ poglavij, toda Rimljane počasneje z zvoki ob spremembah poglavja, potem
   <string name="mynote_saved">Moja opomba je shranjena</string>
   <!--Backup and restore-->
   <string name="backup_and_restore">Varnostna kopija &amp; Obnova varnostne kopije</string>
-  <string name="backup">Shrani v arhiv</string>
+  <string name="backup">Varnostno kopiranje v…</string>
   <string name="backup_success">Moje opombe in Zaznamki so shranjeni v %s na SD kartici</string>
-  <string name="restore">Povrni iz arhiva</string>
-  <string name="restore_confirmation">Prepišem Moje opombe in Zaznamke?</string>
-  <string name="restore_success">Moje opombe in Zaznamki so povrnjeni iz %s na SD kartici</string>
+  <string name="restore">Obnovi iz…</string>
+  <string name="restore_confirmation">Želite prepisati moje opombe, zaznamke, načrte za branje in delovne prostore?</string>
+  <string name="restore_success">Moji zapiski, zaznamki, načrti branja in delovni prostori so uspešno obnovljeni</string>
   <string name="error_no_backup_file">Arhivske datoteke ni mogoče najti</string>
+  <string name="loading_backup">Nalaganje baze podatkov iz varnostne kopije...</string>
+  <string name="backup_email_subject">And Bible varnostno kopiranje baze podatkov</string>
+  <string name="backup_email_message">Vaša And Bible baza podatkov, ki vsebuje zaznamke, opombe, načrte za branje in delovne prostore, je pripeta</string>
+  <string name="restore_unsuccessfull">Obnovitev baze podatkov ni bila uspešna. Morda ste navedli neveljavno datoteko baze podatkov.</string>
   <!--About-->
   <string name="about_copyright">Avtorske pravice: %s</string>
   <string name="about_version">Verzija: %s</string>
   <string name="about_versification">Verzifikacija: %s</string>
+  <string name="send_backup_file">Pošlji arhivsko datoteko</string>
+  <!--Bug reporting-->
+  <string name="send_bug_report_title">Prijavite napako…</string>
+  <string name="report_bug_email_subject">Poročilo o napaki za And Bible%s</string>
+  <string name="report_bug_email_message">Uporabite to funkcijo, da napako prijavite takoj, ko jo opazite. \n
+\n
+Na kratko nam povejte, kaj ste storili / kaj se je zgodilo: \n
+\n
+Informacije o napravi: \n
+ %s</string>
   <!--Document types-->
   <string name="doc_type_bible">Biblija</string>
   <string name="doc_type_commentary">Komentar</string>
@@ -344,11 +400,12 @@ poglavij, toda Rimljane počasneje z zvoki ob spremembah poglavja, potem
   <string name="yes">Da</string>
   <string name="no">Ne</string>
   <string name="error">Napaka</string>
-  <string name="please_wait">Prosim počakaj...</string>
-  <string name="all">Vse</string>
+  <string name="please_wait">Prosimo počakajte…</string>
+  <string name="all">Vsi</string>
   <string name="default_value">@string/lang_default</string>
   <string name="edit">Uredi</string>
   <string name="watch_tutorial_video">Ogled video navodil (Angleščina)</string>
+  <string name="verse_not_found">Vrstice ni mogoče najti</string>
   <!--Errors-->
   <string name="report_error">Pošlji poročilo</string>
   <string name="error_occurred">Zgodila se je napaka</string>
@@ -359,4 +416,34 @@ poglavij, toda Rimljane počasneje z zvoki ob spremembah poglavja, potem
   <!--Notifications-->
   <string name="notification_channel_tts_status">Besedilo v govor</string>
   <string name="notification_channel_progress_status">Obvestilo o stanju napredka nalaganja dokumentov itd.</string>
+  <!--Workspaces-->
+  <string name="workspaces">Delovni prostori</string>
+  <string name="new_workspace">Nov delovni prostor</string>
+  <string name="switch_to_workspace">Preklopi na delovni prostor...</string>
+  <string name="delete_workspace">Izbriši ta delovni prostor</string>
+  <string name="choose_workspace_to_open">Izberi delovni prostor</string>
+  <string name="new_copied_workspace">Kopiraj delovni prostor kot nov</string>
+  <string name="workspace_number">Delovni prostor %d</string>
+  <string name="workspace_name_contents">%s: %s</string>
+  <string name="rename_workspace">Preimenuj delovni prostor …</string>
+  <string name="rename_workspace_title">Poimenuj ta delovni prostor</string>
+  <string name="new_workspace_from_dialog">Nov</string>
+  <string name="delete_workspace_from_dialog">Izbriši trenutnega</string>
+  <string name="history_title">Zgodovina (%s)</string>
+  <!--Beta notice-->
+  <string name="beta_notice_title">To je beta različica!</string>
+  <string name="beta_notice_content_1">
+        V beta različici so na voljo nove funkcije, ki še niso pravilno preizkušene,
+        in tako uporaba beta različice lahko privede do nepričakovanega obnašanja, to je napake.
+        Priporočljivo je, da običajni bralci Biblije, namesto beta različice, uporabljajo stabilno različico.</string>
+  <string name="beta_notice_content_2">
+        Beta uporabnike spodbujamo, da napake prijavljajo prek Google Play ali
+        (rajši) prek%s.
+    </string>
+  <string name="beta_notice_content_3">Če ste programer, razmislite, da bi popravke napak sami prispevali
+        preko %s  :-)</string>
+  <string name="beta_notice_github_issues">Github izdaje</string>
+  <string name="beta_notice_github">Github</string>
+  <string name="beta_notice_dismiss">Opusti</string>
+  <string name="beta_notice_dismiss_until_update">Opusti do naslednjega popravka</string>
 </resources>

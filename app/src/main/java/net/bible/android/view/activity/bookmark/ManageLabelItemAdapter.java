@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -69,7 +69,7 @@ public class ManageLabelItemAdapter extends ArrayAdapter<LabelDto> {
 		}
 		TextView nameView = (TextView) rowView.findViewById(R.id.labelName);
 		nameView.setText(labelDto.getName());
-		if (labelDto.getBookmarkStyle()==null) {
+		if (labelDto.getBookmarkStyle() ==null) {
 			nameView.setBackgroundColor(UiUtils.INSTANCE.getThemeBackgroundColour(getContext()));
 		} else {
 			bookmarkStyleAdapterHelper.styleView(nameView, labelDto.getBookmarkStyle(), getContext(), false, false);
@@ -100,7 +100,7 @@ public class ManageLabelItemAdapter extends ArrayAdapter<LabelDto> {
 			deleteButton.setVisibility(View.VISIBLE);
 		}
 
-		if (ScreenSettings.INSTANCE.isNightMode()) {
+		if (ScreenSettings.INSTANCE.getNightMode()) {
 			editButton.setImageResource(R.drawable.ic_pen_24dp);
 			deleteButton.setImageResource(R.drawable.ic_delete_24dp);
 		} else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -29,7 +29,6 @@ import net.bible.android.view.activity.base.SharedActivityState
 import net.bible.android.view.activity.page.actionmode.VerseActionModeMediator
 import org.json.JSONException
 import org.json.JSONObject
-import java.lang.ref.WeakReference
 
 /**
  * Interface allowing javascript to call java methods in app
@@ -40,17 +39,16 @@ class BibleJavascriptInterface(
 	private val verseActionModeMediator: VerseActionModeMediator,
 	private val windowControl: WindowControl,
 	private val verseCalculator: VerseCalculator,
-	private val currentPageManager: CurrentPageManager,
 	private val bibleInfiniteScrollPopulator: BibleInfiniteScrollPopulator,
-	private val bibleViewRef: WeakReference<BibleView>
+	private val bibleView: BibleView
 ) {
+    private val currentPageManager: CurrentPageManager get() = bibleView.window.pageManager
+
     var notificationsEnabled = false
 
     private var addingContentAtTop = false
 
     private var prevCurrentChapterVerse = ChapterVerse(0, 0)
-
-	private val bibleView: BibleView get() = bibleViewRef.get()!!
 
     // Create Json Object using Facebook Data
 	@JavascriptInterface
@@ -72,25 +70,35 @@ class BibleJavascriptInterface(
 	}
 
     @JavascriptInterface
-    fun onScroll(newYPos: Int) {
-        var newYPos = newYPos
+    fun onScroll(newYPos_: Int) {
+        var newYPos = newYPos_
         // do not try to change verse while the page is changing - can cause all sorts of errors e.g. selected verse may not be valid in new chapter and cause chapter jumps
-        if (notificationsEnabled && !addingContentAtTop && !PassageChangeMediator.getInstance().isPageChanging && !windowControl.isSeparatorMoving()) {
+        if (notificationsEnabled
+            && !addingContentAtTop
+            && !windowControl.isSeparatorMoving()
+            && bibleView.contentVisible)
+        {
             if (currentPageManager.isBibleShown) {
                 // All this does is change the current chapter/verse as if the user had just scrolled to another verse in the same chapter.
                 // I originally thought a PassageChangeEvent would need to be raised as well as CurrentVerseChangedEvent but it seems to work fine as is!
 
                 // if not fullscreen, and (if windows are split vertically and is firstwindow) or (windows are split horizontally) we need to add some offset
-                if (!SharedActivityState.getInstance().isFullScreen && bibleView.isTopWindow) {
+                if (!SharedActivityState.instance.isFullScreen && bibleView.isTopWindow) {
                     newYPos += (bibleView.mainBibleActivity.topOffset2 / bibleView.resources.displayMetrics.density).toInt()
                 }
                 val currentChapterVerse = verseCalculator.calculateCurrentVerse(newYPos)
-                if (currentChapterVerse !== prevCurrentChapterVerse) {
+                if (currentChapterVerse != prevCurrentChapterVerse) {
                     currentPageManager.currentBible.currentChapterVerse = currentChapterVerse
                     prevCurrentChapterVerse = currentChapterVerse
                 }
             }
         }
+    }
+
+    @JavascriptInterface
+    fun setContentReady() {
+        Log.d(TAG, "set content ready")
+        bibleView.setContentReady()
     }
 
     @JavascriptInterface
@@ -129,22 +137,5 @@ class BibleJavascriptInterface(
         bibleInfiniteScrollPopulator.requestMoreTextAtEnd(chapter, textId)
     }
 
-    @JavascriptInterface
-    fun triggerJumpToOffset() {
-        Log.d(TAG, "triggerJumpToOffset!")
-        bibleView.invokeJumpToOffsetIfRequired(true)
-    }
-
-    @JavascriptInterface
-    fun getToolbarOffset(): Float {
-        return bibleView.toolbarOffset
-    }
-
-    @JavascriptInterface
-    fun getCurrentChapterVerseId(): String {
-        return bibleView.getIdToJumpTo(bibleView.window.pageManager.currentBible.currentChapterVerse)
-    }
-
-
-	private val TAG get() = "BibleView[${bibleView.window.screenNo}] JSInt"
+	private val TAG get() = "BibleView[${bibleView.windowRef.get()?.id}] JSInt"
 }

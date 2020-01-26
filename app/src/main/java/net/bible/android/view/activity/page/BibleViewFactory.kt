@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -18,20 +18,17 @@
 
 package net.bible.android.view.activity.page
 
-import android.util.Log
 import net.bible.android.control.bookmark.BookmarkControl
 import net.bible.android.control.link.LinkControl
 import net.bible.android.control.mynote.MyNoteControl
 import net.bible.android.control.page.PageControl
 import net.bible.android.control.page.PageTiltScrollControlFactory
-import net.bible.android.control.page.window.ActiveWindowPageManagerProvider
 import net.bible.android.control.page.window.Window
 import net.bible.android.control.page.window.WindowControl
 import net.bible.android.view.activity.MainBibleActivityScope
 import net.bible.android.view.activity.page.actionmode.VerseActionModeMediator
 import net.bible.android.view.activity.page.actionmode.VerseMenuCommandHandler
 import java.lang.ref.WeakReference
-import java.util.WeakHashMap
 
 import javax.inject.Inject
 
@@ -41,35 +38,57 @@ import javax.inject.Inject
  * @author Martin Denham [mjdenham at gmail dot com]
  */
 @MainBibleActivityScope
-class BibleViewFactory @Inject
-constructor(private val mainBibleActivity: MainBibleActivity, private val pageControl: PageControl, private val pageTiltScrollControlFactory: PageTiltScrollControlFactory, private val windowControl: WindowControl, private val bibleKeyHandler: BibleKeyHandler, private val linkControl: LinkControl, private val bookmarkControl: BookmarkControl, private val myNoteControl: MyNoteControl, private val activeWindowPageManagerProvider: ActiveWindowPageManagerProvider) {
+class BibleViewFactory @Inject constructor(
+    private val mainBibleActivity: MainBibleActivity,
+    private val pageControl: PageControl,
+    private val pageTiltScrollControlFactory: PageTiltScrollControlFactory,
+    private val windowControl: WindowControl,
+    private val bibleKeyHandler: BibleKeyHandler,
+    private val linkControl: LinkControl,
+    private val bookmarkControl: BookmarkControl,
+    private val myNoteControl: MyNoteControl
+) {
 
-    private val screenBibleViewMap: MutableMap<Window, BibleView>
+    private val windowBibleViewMap: MutableMap<Long, BibleView> = HashMap()
 
-    init {
-        screenBibleViewMap = WeakHashMap<Window, BibleView>()
-    }
+    fun getOrCreateBibleView(window: Window): BibleView {
+        var bibleView = windowBibleViewMap[window.id]?.also {
+            // Update window reference (window objects are created when loading from db, but id's are same)
+            it.window = window
+            window.bibleView = it
+            it.listenEvents = true
+        }
 
-    fun createBibleView(window: Window): BibleView {
-		Log.d(TAG, "createBibleView. Now in screenBibleViewMap ${screenBibleViewMap.size} items.")
-        var bibleView = screenBibleViewMap[window]
         if (bibleView == null) {
             val pageTiltScrollControl = pageTiltScrollControlFactory.getPageTiltScrollControl(window)
-            bibleView = BibleView(this.mainBibleActivity, WeakReference(window), windowControl, bibleKeyHandler, pageControl, pageTiltScrollControl, linkControl)
-
-            val bibleViewVerseActionModeMediator = VerseActionModeMediator(mainBibleActivity, WeakReference(bibleView), pageControl, VerseMenuCommandHandler(mainBibleActivity, pageControl, bookmarkControl, myNoteControl), bookmarkControl)
-
-            val bibleInfiniteScrollPopulator = BibleInfiniteScrollPopulator(WeakReference(bibleView), window.pageManager)
-
+            bibleView = BibleView(this.mainBibleActivity, WeakReference(window), windowControl, bibleKeyHandler,
+                pageControl, pageTiltScrollControl, linkControl)
+            val bibleViewVerseActionModeMediator = VerseActionModeMediator(mainBibleActivity, bibleView, pageControl,
+                VerseMenuCommandHandler(mainBibleActivity, pageControl, bookmarkControl, myNoteControl), bookmarkControl)
+            val bibleInfiniteScrollPopulator = BibleInfiniteScrollPopulator(bibleView)
             val verseCalculator = VerseCalculator()
-            val bibleJavascriptInterface = BibleJavascriptInterface(bibleViewVerseActionModeMediator, windowControl, verseCalculator, window.pageManager, bibleInfiniteScrollPopulator, WeakReference(bibleView))
+            val bibleJavascriptInterface = BibleJavascriptInterface(bibleViewVerseActionModeMediator, windowControl,
+                verseCalculator, bibleInfiniteScrollPopulator, bibleView)
             bibleView.setBibleJavascriptInterface(bibleJavascriptInterface)
-            bibleView.id = BIBLE_WEB_VIEW_ID_BASE + window.screenNo
+            bibleView.id = BIBLE_WEB_VIEW_ID_BASE + window.id.toInt()
             bibleView.initialise()
+            bibleView.onDestroy = {
+                windowBibleViewMap.remove(window.id)
+            }
 
-            screenBibleViewMap[window] = bibleView
+            windowBibleViewMap[window.id] = bibleView
         }
         return bibleView
+
+    }
+
+    fun clear() {
+        windowBibleViewMap.forEach { it ->
+            val bw = it.value
+            bw.onDestroy = null
+            bw.doDestroy()
+        }
+        windowBibleViewMap.clear()
     }
 
     companion object {

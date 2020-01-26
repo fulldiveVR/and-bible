@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -18,7 +18,6 @@
 
 package net.bible.android.view.activity.mynote
 
-import android.content.SharedPreferences
 import android.graphics.Color
 import androidx.appcompat.widget.AppCompatEditText
 import android.util.TypedValue
@@ -29,8 +28,8 @@ import android.widget.LinearLayout
 import net.bible.android.control.event.ABEventBus
 import net.bible.android.control.event.apptobackground.AppToBackgroundEvent
 import net.bible.android.control.event.passage.BeforeCurrentPageChangeEvent
+import net.bible.android.control.event.passage.SynchronizeWindowsEvent
 import net.bible.android.control.mynote.MyNoteControl
-import net.bible.android.control.page.ChapterVerse
 import net.bible.android.view.activity.base.DocumentView
 import net.bible.android.view.activity.page.MainBibleActivity
 import net.bible.service.common.CommonUtils
@@ -56,7 +55,6 @@ class MyNoteEditTextView(private val mainBibleActivity: MainBibleActivity, priva
         gravity = Gravity.TOP
         isVerticalScrollBarEnabled = true
         updatePadding()
-        applyPreferenceSettings()
     }
 
     private fun updatePadding() {
@@ -68,6 +66,8 @@ class MyNoteEditTextView(private val mainBibleActivity: MainBibleActivity, priva
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        updatePadding()
+        load()
 
         // register for passage change events
         ABEventBus.getDefault().register(this)
@@ -85,6 +85,7 @@ class MyNoteEditTextView(private val mainBibleActivity: MainBibleActivity, priva
     fun onEvent(event: BeforeCurrentPageChangeEvent) {
         // force MyNote.save if in MyNote and suddenly change to another view
         save()
+        ABEventBus.getDefault().post(SynchronizeWindowsEvent())
     }
 
 	fun onEvent(event: AppToBackgroundEvent) {
@@ -95,22 +96,22 @@ class MyNoteEditTextView(private val mainBibleActivity: MainBibleActivity, priva
         myNoteControl.saveMyNoteText(text!!.toString())
     }
 
-    override fun show(html: String, updateLocation: Boolean) {
+    fun load() {
         applyPreferenceSettings()
-        setText(html)
+        val currentPage = myNoteControl.activeWindowPageManagerProvider.activeWindowPageManager.currentMyNotePage
+        setText(currentPage.currentPageContent)
         updatePadding()
     }
 
     override fun applyPreferenceSettings() {
         changeBackgroundColour()
 
-        val preferences = CommonUtils.sharedPreferences
-        val fontSize = preferences.getInt("text_size_pref", 16)
+        val fontSize = mainBibleActivity.windowRepository.textDisplaySettings.fontSize!!
         setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
     }
 
     override fun changeBackgroundColour() {
-        if (ScreenSettings.isNightMode) {
+        if (ScreenSettings.nightMode) {
             setBackgroundColor(Color.BLACK)
             setTextColor(Color.WHITE)
         } else {

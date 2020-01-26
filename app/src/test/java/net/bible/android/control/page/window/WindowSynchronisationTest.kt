@@ -1,11 +1,13 @@
 package net.bible.android.control.page.window
 
+import net.bible.android.TestBibleApplication
 import net.bible.android.control.event.ABEventBus
 import net.bible.android.control.event.EventManager
 import net.bible.android.control.mynote.MyNoteDAO
 import net.bible.android.control.page.ChapterVerse
 import net.bible.android.control.page.CurrentPageManager
 import net.bible.android.control.versification.BibleTraverser
+import net.bible.service.download.RepoFactory
 import net.bible.service.history.HistoryManager
 import net.bible.service.sword.SwordContentFacade
 import net.bible.service.sword.SwordDocumentFacade
@@ -21,8 +23,13 @@ import javax.inject.Provider
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.CoreMatchers.not
 import org.junit.Assert.assertThat
+import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(application = TestBibleApplication::class, sdk = [28])
 class WindowSynchronisationTest {
 
     private var eventManager: EventManager? = null
@@ -39,11 +46,13 @@ class WindowSynchronisationTest {
         val swordContentFactory = mock(SwordContentFacade::class.java)
         val bibleTraverser = mock(BibleTraverser::class.java)
         val myNoteDao = mock(MyNoteDAO::class.java)
+        val repoFactory = mock(RepoFactory::class.java)
 
-        val mockCurrentPageManagerProvider = Provider { CurrentPageManager(swordContentFactory, SwordDocumentFacade(null), bibleTraverser, myNoteDao) }
+        val mockCurrentPageManagerProvider = Provider { CurrentPageManager(swordContentFactory, SwordDocumentFacade(repoFactory), bibleTraverser, myNoteDao, windowRepository!!) }
         val mockHistoryManagerProvider = Provider { HistoryManager(windowControl!!) }
         windowRepository = WindowRepository(mockCurrentPageManagerProvider, mockHistoryManagerProvider)
         windowControl = WindowControl(windowRepository!!, eventManager!!)
+        windowRepository!!.initialize()
     }
 
     @After

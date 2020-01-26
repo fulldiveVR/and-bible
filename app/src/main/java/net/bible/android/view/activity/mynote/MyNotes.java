@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -22,6 +22,8 @@
 package net.bible.android.view.activity.mynote;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -105,6 +107,8 @@ public class MyNotes extends ListActivityBase implements ListActionModeHelper.Ac
 				myNoteSelected(myNoteList.get(position));
 
 				// HistoryManager will create a new Activity on Back
+				Intent resultIntent= new Intent(this, MyNotes.class);
+				setResult(Activity.RESULT_OK, resultIntent);
 				finish();
 			}
     	} catch (Exception e) {

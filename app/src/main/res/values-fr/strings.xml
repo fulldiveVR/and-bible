@@ -6,10 +6,10 @@
   <string name="help_text">Ouvrez le Menu pour accéder aux différentes fonctions.\n\n
 Pour se déplacer au chapitre précédent ou au suivant, utilisez le pavé tactile, le pavé de direction ou balayez l\'écran horizontalement avec votre doigt.</string>
   <string name="help_nav_title">Navigation</string>
-  <string name="help_nav_text">Déplacez-vous au chapitre précédent ou au suivant en balayant l\'écran horizontalement avec votre doigt.
+  <string name="help_nav_text">Passez au chapitre précédent ou au suivant en balayant l\'écran horizontalement avec votre doigt.
 Tapotez deux fois sur le texte biblique pour activer le mode plein écran. Vous avez accès au menu des fenêtres de texte biblique par un appui prolongé sur le bouton Menu affiché dans le coin droit.</string>
   <string name="help_speech_title">Lecture audio</string>
-  <string name="help_speech_text">Sélectionner Lecture audio pour ouvrir la fenêtre permettant de démarrer ou arrêter la lecture à voix haute.</string>
+  <string name="help_speech_text">Sélectionnez Lecture audio pour ouvrir la fenêtre permettant de démarrer ou arrêter la lecture à voix haute.</string>
   <string name="help_mynote_title">Mes notes</string>
   <string name="help_mynote_text">Les notes s\'ajoutent via l\'option Mes notes du menu contextuel de chaque verset.
 La liste des notes existantes est accessible par le Menu principal.</string>
@@ -22,8 +22,8 @@ Le menu du gestionnaire des signets permet de classer les signets par étiquette
  (voir \"Apache Lucene - Query Parser Syntax\" pour plus de détails)</string>
   <string name="help_contextmenus_title">Menus contextuels</string>
   <string name="help_contextmenus_text">
-Un Appui prolongé sur un verset dans le texte biblique ouvre le menu contextuel des actions possibles sur ce verset.
-Un Appui prolongé sur un document dans le sélecteur de documents affiche le menu contextuel permettant d\'afficher les informations relatives à ce document, ou si besoin de le supprimer.
+Un Appui prolongé sur un verset dans le texte biblique ouvre le menu des actions possibles sur le verset.
+Un Appui prolongé sur un document dans le sélecteur de documents affiche le menu permettant d\'afficher les informations relatives à ce document, ou si besoin de le supprimer.
 Un Appui prolongé sur le bouton Retour ouvre l\'Historique de consultation.</string>
   <string name="version_text">Version %s</string>
   <string name="no_sdcard_error">Merci d\'insérer une carte SD et de redémarrer MoneyBible.</string>
@@ -77,8 +77,8 @@ Un Appui prolongé sur le bouton Retour ouvre l\'Historique de consultation.</st
   <string name="prefs_verse_per_line_title">Un verset par ligne</string>
   <string name="prefs_show_bookmarks_title">Afficher les signets</string>
   <string name="prefs_default_bookmark_style_title">Style des signets</string>
-  <string name="prefs_default_bookmark_style_summary">Sélectionne le style spécial d\'affichage des versets marqués d\'un signet</string>
-  <string name="prefs_show_mynotes_title">Marques des notes</string>
+  <string name="prefs_default_bookmark_style_summary">Sélectionne le style d\'affichage des versets marqués d\'un signet</string>
+  <string name="prefs_show_mynotes_title">Afficher mes notes</string>
   <string name="prefs_show_notes_title">Notes et références croisées</string>
   <string name="prefs_show_strongs_title">Nombres de Strong</string>
   <string name="prefs_show_morphology_title">Codes morphologiques</string>
@@ -89,6 +89,7 @@ Un Appui prolongé sur le bouton Retour ouvre l\'Historique de consultation.</st
   <string name="prefs_night_mode_title">Mode nuit</string>
   <string name="prefs_night_mode_summary">Facilite la lecture dans la pénombre</string>
   <string name="prefs_night_mode_automatic">Automatique</string>
+  <string name="prefs_night_mode_system">Système</string>
   <string name="prefs_navigate_to_verse_title">Aller au verset</string>
   <string name="prefs_navigate_to_verse_summary">Sélectionne aussi le verset (après le chapitre) lors du choix d\'un passage</string>
   <string name="prefs_open_links_in_special_window_title">Ouvrir les liens dans une fenêtre spéciale</string>
@@ -99,7 +100,7 @@ Un Appui prolongé sur le bouton Retour ouvre l\'Historique de consultation.</st
   <string name="prefs_screen_keep_on_title">Maintenir activé</string>
   <string name="prefs_screen_keep_on_summary">Bloque la mise en veille automatique</string>
   <string name="prefs_interface_locale_title">Langue de l\'application</string>
-  <string name="prefs_interface_locale_summary">Sélection d\'une langue d\'interface utilisateur personnalisée </string>
+  <string name="prefs_interface_locale_summary">Sélection d\'une langue d\'interface personnalisée </string>
   <string name="prefs_split_mode_vertical">Vertical</string>
   <string name="prefs_split_mode_horizontal">Horizontal</string>
   <string name="prefs_split_mode_automatic">Automatique</string>
@@ -110,7 +111,7 @@ Un Appui prolongé sur le bouton Retour ouvre l\'Historique de consultation.</st
   <string name="bible_text_options">Options du texte biblique</string>
   <string name="auto_fullscreen">Plein-écran par défilement</string>
   <string name="switch_split_mode">Activer le mode partagé</string>
-  <string name="reversed_split_mode">Partage d\'écran renversé</string>
+  <string name="reversed_split_mode">Partage d\'écran pivoté</string>
   <string name="prefs_auto_night_mode_title">Mode nuit automatique</string>
   <string name="prefs_auto_night_mode_summary">Active le mode nuit sur détection automatique</string>
   <!--Window-->
@@ -139,7 +140,10 @@ Un Appui prolongé sur le bouton Retour ouvre l\'Historique de consultation.</st
   <string name="download_refreshing_book_list">Mise à jour de la liste des documents disponibles</string>
   <string name="download_refresh_book_list_menu_item">Rafraîchir</string>
   <string name="error_downloading">Une erreur est apparue pendant le téléchargement. Merci de vérifier votre connexion internet.</string>
-  <string name="no_internet_connection">Impossible de se connecter à internet</string>
+  <string name="no_internet_connection">
+Impossible de se connecter au serveur de modules de Crosswire.
+Le serveur est peut-être hors-ligne ou vous n\'avez pas de connexion internet.
+Veuillez réessayer ultérieurement.</string>
   <string name="storage_space_warning">Espace de stockage local insuffisant.</string>
   <string name="too_many_jobs">De trop nombreuses tâches sont en cours d\'exécution. Merci d\'attendre la fin de quelques-unes puis d\'essayer à nouveau.</string>
   <string name="document_not_installed">Merci de télécharger \'%s\'</string>
@@ -156,10 +160,41 @@ Un Appui prolongé sur le bouton Retour ouvre l\'Historique de consultation.</st
   <string name="rdg_plan_title">Plan de lecture</string>
   <string name="rdg_plan_selector_title">Choix d\'un plan de lecture</string>
   <string name="rdg_plan_day">Jour %s</string>
-  <string name="rdg_plan_set_start_jan1">Commence le 1 Jan</string>
+  <string name="rdg_plan_set_start_date">Saisir la date de départ...</string>
   <string name="done">Fait</string>
   <string name="reset">Réinitialiser</string>
-  <!--string name="rdg_plan_m1gospels">Through the Gospels in a month</string-->
+  <string name="reset_plan_question">Êtes-vous sûrs de redémarrer ce plan?</string>
+  <string name="plan_duplicate_user_plan">
+Un plan de lecture existe sur la sdcard
+jsword/readingplan du même nom qu\'un plan interne. Il ne peut pas être listé.
+Veuillez renommer le fichier en laissant son extension .properties</string>
+  <string name="plan_name_y1ntpspr">NT, Psaumes &amp; Proverbes en un an</string>
+  <string name="plan_description_y1ntpspr">
+Avec l\'aimable autorisation de HEARTLIGHT Internet Magazine,
+http://www.heartlight.org</string>
+  <string name="plan_name_y1ot1nt1_chronological">Bible chronologique en 1 an</string>
+  <string name="plan_description_y1ot1nt1_chronological">
+Plan basé sur l\'ordre chronologique des événements dans la Bible.
+La chronologie est approximative.</string>
+  <string name="plan_name_y1ot1nt1_OTandNT">Bible en 1 an, AT et NT simultanément</string>
+  <string name="plan_description_y1ot1nt1_OTandNT">
+Lecture de la Bible en 1 an, avec des chapitres
+dans l\'AT et le NT chaque jour.</string>
+  <string name="plan_name_y1ot1nt1_OTthenNT">Bible en 1 an</string>
+  <string name="plan_description_y1ot1nt1_OTthenNT">
+Lecture de la Bible en 1 an, commence par la Genèse
+et se termine par l\'Apocalypse. AT en premier, puis NT. </string>
+  <string name="plan_name_y1ot1nt2_mcheyne">Bible en un an, 4 chapitres/jour de McCheyne</string>
+  <string name="plan_description_y1ot1nt2_mcheyne">
+Plan de Robert Murray McCheyne, pasteur écossais. 
+4 passages différents à lire chaque jour: 2 passages de l\'AT + 1 passage du NT + 1 passage des Psaumes ou des Évangiles.
+En une année, l\'AT est lu 1 fois et les Psaumes et le NT sont lus 2 fois . </string>
+  <string name="plan_name_y1ot6nt4_profHorner">Plan de lecture du Prof. Horner. 10 chapitres/jour</string>
+  <string name="plan_description_y1ot6nt4_profHorner">Avec l\'aimable autorisation de Prof. Horner</string>
+  <string name="plan_name_y2ot1ntps2">Bible en 2 ans, NT+Psaumes 2 fois</string>
+  <string name="plan_description_y2ot1ntps2">
+Lecture de la Bible en 2 ans, le NT et les Psaumes sont lus 2 fois.
+Avec l\'aimable autorisation de Wholesome Words, http://www.wholesomewords.org/</string>
   <!--Document context menu-->
   <string name="delete">Supprimer</string>
   <string name="delete_index">Supprimer l\'index de recherche</string>
@@ -258,12 +293,12 @@ Un Appui prolongé sur le bouton Retour ouvre l\'Historique de consultation.</st
   <string name="system_speak_settings">Paramètres de la synthèse vocale</string>
   <string name="speak_bookmark_help">Aide des signets audio</string>
   <string name="speak_help_auto_bookmark">
-Un Signet audio est automatiquement généré lorsque la Lecture audio est mise sur pause ou arrêt. Ces signets ont pour label Lecture audio.
-Si vous avez redémarré l\'écoute à partir d\'un tel signet, celui-ci sera déplacé au verset où la Lecture audio sera mise en pause ou arrêt.
-Seuls les signets de type Lecture audio sont transposables, les autres signets restent inchangés.</string>
+Un Signet audio est automatiquement généré lorsque la Lecture audio est mise sur pause ou arrétée. Ces signets ont pour label Lecture audio.
+Si vous démarrez l\'écoute à partir d\'un signet audio, celui-ci sera déplacé au verset où vous interromprez ensuite la Lecture audio.
+Seuls les signets de type Lecture audio sont déplacés, les autres signets restent inchangés.</string>
   <string name="speak_help_playback_settings">
-Vos paramètres audio (section Paramètres des signets de la Lecture audio) sont enregistrés avec le signet audio, quand cette option est activée.
-Lorsque vous redémarrez la lecture à partir d\'un signet audio, les paramètres de lecture sont alors rechargés avec le signet.</string>
+Si cette option est activée, vos paramètres audio (section Paramètres des signets de la Lecture audio) sont enregistrés dans le signet audio.
+Quand vous redémarrez la lecture à partir d\'un signet audio, les paramètres de lecture sont rechargés à partir du signet.</string>
   <string name="speak_help_playback_settings_example">
 Par exemple si vous écoutez Genèse et Romains, et désirez entendre Genèse à bonne vitesse sans notifications de changement de chapitre mais Romains plutôt lentement avec un effet sonore en tête de chapitre, vous conserverez ces paramètres différents pour l\'écoute si ces paramètres sont enregistrés dans les signets correspondants.</string>
   <!--List of (max 5) words that will be searched and replaced by their counterpart in divinename_replace
@@ -306,16 +341,22 @@ La répétition automatique de passage a été automatiquement désactivée car 
   <string name="mynote_saved">Ma note a été enregistrée</string>
   <!--Backup and restore-->
   <string name="backup_and_restore">Sauvegarder &amp; Restaurer</string>
-  <string name="backup">Sauvegarder</string>
+  <string name="backup">Sauvegarder vers...</string>
   <string name="backup_success">Mes Notes et Signets ont été sauvegardés dans %s sur la carte SD</string>
-  <string name="restore">Restaurer</string>
-  <string name="restore_confirmation">Écraser Mes Notes et Signets?</string>
-  <string name="restore_success">Mes Notes et Signets ont été restaurés de la carte SD depuis %s</string>
+  <string name="restore">Restaurer de...</string>
+  <string name="restore_confirmation">Écraser mes Notes, Signets, Plans de lecture et mes Espaces?</string>
+  <string name="restore_success">Mes Notes, Signets, Plans de lecture et mes Espaces ont été restaurés avec succès</string>
   <string name="error_no_backup_file">Aucun fichier de sauvegarde n\'a été trouvé</string>
+  <string name="loading_backup">Chargement de la base de données depuis la sauvegarde...</string>
+  <string name="backup_email_subject">Sauvegarde de la base de données de And Bible</string>
+  <string name="backup_email_message">Votre base de données And Bible comprenant Notes, Signets, Plans de lecture et Espaces est ci-jointe.</string>
+  <string name="restore_unsuccessfull">La restauration de la base de données a échoué.
+Le fichier est peut-être invalide.</string>
   <!--About-->
   <string name="about_copyright">Droits d\'auteur: %s</string>
   <string name="about_version">Version: %s</string>
   <string name="about_versification">Versification: %s</string>
+  <!--Bug reporting-->
   <!--Document types-->
   <string name="doc_type_bible">Bible</string>
   <string name="doc_type_commentary">Commentaire</string>
@@ -330,11 +371,12 @@ La répétition automatique de passage a été automatiquement désactivée car 
   <string name="yes">Oui</string>
   <string name="no">Non</string>
   <string name="error">Erreur </string>
-  <string name="please_wait">Attendez svp...</string>
+  <string name="please_wait">Veuillez patienter...</string>
   <string name="all">Tout</string>
   <string name="default_value">@string/lang_default</string>
   <string name="edit">Éditer</string>
   <string name="watch_tutorial_video">Voir le tutoriel vidéo (en anglais)</string>
+  <string name="verse_not_found">Verset non trouvé</string>
   <!--Errors-->
   <string name="report_error">Envoyer un rapport </string>
   <string name="error_occurred">Une erreur s\'est produite</string>
@@ -345,4 +387,31 @@ La répétition automatique de passage a été automatiquement désactivée car 
   <!--Notifications-->
   <string name="notification_channel_tts_status">Lecture de texte</string>
   <string name="notification_channel_progress_status">État d\'avancement de la notification de téléchargement des documents etc.</string>
+  <!--Workspaces-->
+  <string name="workspaces">Espaces</string>
+  <string name="new_workspace">Nouvel espace</string>
+  <string name="switch_to_workspace">Changer d\'espace...</string>
+  <string name="delete_workspace">Supprimer cet espace</string>
+  <string name="choose_workspace_to_open">Sélectionner l\'espace à ouvrir</string>
+  <string name="new_copied_workspace">Copier cet espace</string>
+  <string name="workspace_number">Espace %d</string>
+  <string name="workspace_name_contents">%s: %s</string>
+  <string name="rename_workspace">Renommer l\'espace...</string>
+  <string name="rename_workspace_title">Donner un nom à cet espace</string>
+  <string name="new_workspace_from_dialog">Nouveau</string>
+  <string name="delete_workspace_from_dialog">Supprimer actuel</string>
+  <string name="history_title">Historique (%s)</string>
+  <!--Beta notice-->
+  <string name="beta_notice_title">Ceci est une version bêta!</string>
+  <string name="beta_notice_content_1">
+Dans une version bêta, les nouvelles fonctionnalités n\'ont pas encore été toutes entièrement testées,
+une bêta peut donc produire des bogues qui sont encore en cours d\'analyse et de correction.
+Il est recommandé d\'utiliser la version stable. </string>
+  <string name="beta_notice_content_2">
+Les bêta-testeurs sont invités à rapporter les bogues via Google Play ou (de préférence) via %s.</string>
+  <string name="beta_notice_content_3">Si vous êtes développeur, merci d\'envisager de contribuer vous-mêmes aux corrections de bogues sur %s :)</string>
+  <string name="beta_notice_github_issues">Github issues</string>
+  <string name="beta_notice_github">Github</string>
+  <string name="beta_notice_dismiss">Ignorer</string>
+  <string name="beta_notice_dismiss_until_update">Ignorer jusqu\'à la prochaine mise à jour</string>
 </resources>

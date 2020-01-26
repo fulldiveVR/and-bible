@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -19,14 +19,12 @@
 package net.bible.android.view.activity.page
 
 import net.bible.android.control.page.CurrentBiblePage
-import net.bible.android.control.page.CurrentPageManager
 import net.bible.android.view.activity.base.Callback
 
 import org.apache.commons.lang3.StringEscapeUtils
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.debug
 import org.jetbrains.anko.doAsync
-import java.lang.ref.WeakReference
 
 /**
  * Get next or previous page for insertion at the top or bottom of the current webview.
@@ -34,21 +32,19 @@ import java.lang.ref.WeakReference
  * @author Martin Denham [mjdenham at gmail dot com]
  */
 class BibleInfiniteScrollPopulator(
-    private val bibleViewtextInserterRef: WeakReference<BibleViewTextInserter>,
-    private val currentPageManager: CurrentPageManager) : AnkoLogger
+    private val bibleView: BibleView) : AnkoLogger
 {
-    val bibleViewtextInserter get() = bibleViewtextInserterRef.get()!!
 
     fun requestMoreTextAtTop(chapter: Int, textId: String, callback: Callback) {
         debug("requestMoreTextAtTop")
         // do in background thread
         doAsync {
             // get page fragment for previous chapter
-            val currentPage = currentPageManager.currentPage
+            val currentPage = bibleView.window.pageManager.currentPage
             if (currentPage is CurrentBiblePage) {
                 var fragment = currentPage.getFragmentForChapter(chapter)
                 fragment = StringEscapeUtils.escapeEcmaScript(fragment)
-                bibleViewtextInserter.insertTextAtTop(textId, fragment)
+                bibleView.insertTextAtTop(chapter, textId, fragment)
             }
             // tell js interface that insert is complete
             callback.okay()
@@ -60,11 +56,11 @@ class BibleInfiniteScrollPopulator(
         // do in background thread
         doAsync {
             // get page fragment for previous chapter
-            val currentPage = currentPageManager.currentPage
+            val currentPage = bibleView.window.pageManager.currentPage
             if (currentPage is CurrentBiblePage) {
                 var fragment = currentPage.getFragmentForChapter(chapter)
                 fragment = StringEscapeUtils.escapeEcmaScript(fragment)
-                bibleViewtextInserter.insertTextAtEnd(textId, fragment)
+                bibleView.insertTextAtEnd(chapter, textId, fragment)
             }
         }
     }

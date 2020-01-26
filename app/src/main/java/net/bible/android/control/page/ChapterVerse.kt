@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -17,8 +17,6 @@
  */
 
 package net.bible.android.control.page
-
-import net.bible.android.SharedConstants
 
 import org.crosswire.jsword.passage.Verse
 

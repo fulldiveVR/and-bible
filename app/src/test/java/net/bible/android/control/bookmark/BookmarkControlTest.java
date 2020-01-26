@@ -68,7 +68,7 @@ public class BookmarkControlTest {
 
 		List<BookmarkDto> bookmarks = bookmarkControl.getAllBookmarks();
 		for (BookmarkDto dto : bookmarks) {
-			bookmarkControl.deleteBookmark(dto);
+			bookmarkControl.deleteBookmark(dto, false);
 		}
 
 		List<LabelDto> labels = bookmarkControl.getAllLabels();
@@ -86,7 +86,7 @@ public class BookmarkControlTest {
 		try {
 			BookmarkDto newDto = addTestVerse();
 			assertEquals("New Bookmark key incorrect.  Test:"+currentTestVerse+" was:"+newDto.getVerseRange().getName(), newDto.getVerseRange().getName(), currentTestVerse);
-			assertTrue("New Bookmark id incorrect", newDto.getId()>-1);
+			assertTrue("New Bookmark id incorrect", newDto.getId() >-1);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception:"+e.getMessage());
@@ -114,7 +114,7 @@ public class BookmarkControlTest {
 		addTestVerse();
 		List<BookmarkDto> bookmarks = bookmarkControl.getAllBookmarks();
 		BookmarkDto toDelete = bookmarks.get(0);
-		bookmarkControl.deleteBookmark(toDelete);
+		bookmarkControl.deleteBookmark(toDelete, false);
 		
 		bookmarks = bookmarkControl.getAllBookmarks();
 		for (BookmarkDto bookmark : bookmarks) {
@@ -128,7 +128,7 @@ public class BookmarkControlTest {
 		try {
 			LabelDto newDto = addTestLabel();
 			assertEquals("New Label name incorrect.  Test:"+currentTestLabel+" was:"+newDto.getName(), newDto.getName(), currentTestLabel);
-			assertTrue("New Label id incorrect", newDto.getId()>-1);
+			assertTrue("New Label id incorrect", newDto.getId() >-1);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception:"+e.getMessage());
@@ -187,7 +187,7 @@ public class BookmarkControlTest {
 		final VerseRange verseRange = new VerseRange(KJV_VERSIFICATION, new Verse(KJV_VERSIFICATION, BibleBook.PS, 17, 2), new Verse(KJV_VERSIFICATION, BibleBook.PS, 17, 5));
 		newBookmarkDto.setVerseRange(verseRange);
 
-		BookmarkDto newDto = bookmarkControl.addOrUpdateBookmark(newBookmarkDto);
+		BookmarkDto newDto = bookmarkControl.addOrUpdateBookmark(newBookmarkDto, false);
 
 		assertThat(newDto.getVerseRange(), equalTo(verseRange));
 
@@ -200,7 +200,7 @@ public class BookmarkControlTest {
 		final VerseRange verseRange = new VerseRange(KJV_VERSIFICATION, new Verse(KJV_VERSIFICATION, BibleBook.PS, 17, 10));
 		newBookmarkDto.setVerseRange(verseRange);
 
-		bookmarkControl.addOrUpdateBookmark(newBookmarkDto);
+		bookmarkControl.addOrUpdateBookmark(newBookmarkDto, false);
 
 		Verse startVerse = new Verse(KJV_VERSIFICATION, BibleBook.PS, 17, 10);
 		assertThat(bookmarkControl.isBookmarkForKey(startVerse), equalTo(true));
@@ -340,7 +340,7 @@ public class BookmarkControlTest {
 	private BookmarkDto addBookmark(String verse) throws NoSuchVerseException {
 		BookmarkDto bookmark = new BookmarkDto();
 		bookmark.setVerseRange(VerseRangeFactory.fromString(KJV_VERSIFICATION, verse));
-		return bookmarkControl.addOrUpdateBookmark(bookmark);
+		return bookmarkControl.addOrUpdateBookmark(bookmark, false);
 	}
 
 	private LabelDto addTestLabel() {

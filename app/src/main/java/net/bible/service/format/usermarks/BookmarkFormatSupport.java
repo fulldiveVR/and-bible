@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -65,7 +65,6 @@ public class BookmarkFormatSupport {
 				"default_bookmark_style_pref", BookmarkStyle.YELLOW_STAR.name()));
 		Map<Integer, Set<BookmarkStyle>> bookmarkStylesByVerseNoInPassage = new HashMap<>();
 		try {
-			db.open();
 			bookmarkList = db.getBookmarksInBook(book);
 
 			// convert to required versification and check verse is in passage
@@ -95,9 +94,7 @@ public class BookmarkFormatSupport {
 				}
 			}
 
-		} finally {
-			db.close();
-		}
+		} finally {}
 		return bookmarkStylesByVerseNoInPassage;
 	}
 

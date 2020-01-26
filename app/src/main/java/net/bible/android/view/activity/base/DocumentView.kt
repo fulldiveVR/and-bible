@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -20,7 +20,6 @@ package net.bible.android.view.activity.base
 
 import android.view.View
 
-import net.bible.android.control.page.ChapterVerse
 
 /**
  * Base class for boble and My Note document views
@@ -36,8 +35,6 @@ interface DocumentView {
     val isPagePreviousOkay: Boolean
 
     val currentPosition: Float
-
-    fun show(html: String, updateLocation: Boolean = false)
 
     fun applyPreferenceSettings()
 

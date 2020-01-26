@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -42,7 +42,7 @@ class SearchIndex : CustomTitlebarActivityBase() {
 
     @Inject lateinit var searchControl: SearchControl
 
-    private val documentToIndex: Book
+    private val documentToIndex: Book?
         get() {
             val documentInitials = intent.getStringExtra(SearchControl.SEARCH_DOCUMENT)
 
@@ -126,7 +126,7 @@ class SearchIndex : CustomTitlebarActivityBase() {
         // always need to specify which document is being indexed
         if (StringUtils.isEmpty(intent.getStringExtra(SearchControl.SEARCH_DOCUMENT))) {
             // must tell the progress status screen which doc is being downloaded because it checks it downloaded successfully
-            intent.putExtra(SearchControl.SEARCH_DOCUMENT, documentToIndex.initials)
+            intent.putExtra(SearchControl.SEARCH_DOCUMENT, documentToIndex?.initials)
         }
 
         startActivity(intent)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -174,13 +174,13 @@ class BibleSpeakTextProvider(private val swordContentFacade: SwordContentFacade,
         val books = ArrayList<SwordBook>()
         val firstBook = windowRepository.activeWindow.pageManager.currentPage.currentDocument
 
-        if(firstBook.bookCategory == BookCategory.BIBLE) {
+        if(firstBook?.bookCategory == BookCategory.BIBLE) {
             books.add(firstBook as SwordBook)
         }
 
         for (w in windowRepository.visibleWindows) {
             val book = w.pageManager.currentPage.currentDocument
-            if (book !== firstBook && book.bookCategory == BookCategory.BIBLE) {
+            if (book !== firstBook && book?.bookCategory == BookCategory.BIBLE) {
                 books.add(book as SwordBook)
             }
         }
@@ -334,19 +334,19 @@ class BibleSpeakTextProvider(private val swordContentFacade: SwordContentFacade,
         isSpeaking = false
     }
 
-    private fun updateBookmark() {
+    private fun updateBookmark(doNotSync: Boolean = false) {
         removeBookmark()
-        saveBookmark()
+        saveBookmark(doNotSync)
     }
 
     override fun savePosition(fractionCompleted: Float) {}
 
-    private var isSpeaking: Boolean = false
+    override var isSpeaking: Boolean = false
 
-    override fun stop() {
+    override fun stop(doNotSync: Boolean) {
         reset()
         if(isSpeaking) {
-            updateBookmark()
+            updateBookmark(doNotSync)
         }
         isSpeaking = false
         bookmarkDto = null
@@ -383,7 +383,7 @@ class BibleSpeakTextProvider(private val swordContentFacade: SwordContentFacade,
     private fun removeBookmark() {
         var bookmarkDto: BookmarkDto = this.bookmarkDto ?: return
 
-        val labelList = bookmarkControl.getBookmarkLabels(bookmarkDto)
+        val labelList = bookmarkControl.getBookmarkLabels(bookmarkDto).toMutableList()
         val speakLabel = bookmarkControl.orCreateSpeakLabel
         val ttsLabel = labelList.find { it.id == speakLabel.id }
 
@@ -391,19 +391,19 @@ class BibleSpeakTextProvider(private val swordContentFacade: SwordContentFacade,
             if(labelList.size > 1 || bookmarkDto.playbackSettings?.bookmarkWasCreated == false) {
                 labelList.remove(ttsLabel)
                 bookmarkDto.playbackSettings = null
-                bookmarkDto = bookmarkControl.addOrUpdateBookmark(bookmarkDto)
+                bookmarkDto = bookmarkControl.addOrUpdateBookmark(bookmarkDto, true)
                 bookmarkControl.setBookmarkLabels(bookmarkDto, labelList)
                 Log.d("SpeakBookmark", "Removed speak label from bookmark $bookmarkDto")
             }
             else {
-                bookmarkControl.deleteBookmark(bookmarkDto)
+                bookmarkControl.deleteBookmark(bookmarkDto, true)
                 Log.d("SpeakBookmark", "Removed bookmark from $bookmarkDto")
             }
             this.bookmarkDto = null
         }
     }
 
-    private fun saveBookmark(){
+    private fun saveBookmark(doNotSync: Boolean){
         val labelList = ArrayList<LabelDto>()
         if(settings.autoBookmark) {
             var bookmarkDto = bookmarkControl.getBookmarkByKey(startVerse)
@@ -415,18 +415,18 @@ class BibleSpeakTextProvider(private val swordContentFacade: SwordContentFacade,
                 bookmarkDto = BookmarkDto()
                 bookmarkDto.verseRange = VerseRange(startVerse.versification, startVerse)
                 bookmarkDto.playbackSettings = playbackSettings
-                bookmarkDto = bookmarkControl.addOrUpdateBookmark(bookmarkDto)
+                bookmarkDto = bookmarkControl.addOrUpdateBookmark(bookmarkDto, true)
             }
             else {
                 playbackSettings.bookmarkWasCreated = bookmarkDto.playbackSettings?.bookmarkWasCreated ?: false
                 labelList.addAll(bookmarkControl.getBookmarkLabels(bookmarkDto))
                 bookmarkDto.playbackSettings = playbackSettings
-                bookmarkDto = bookmarkControl.addOrUpdateBookmark(bookmarkDto)
+                bookmarkDto = bookmarkControl.addOrUpdateBookmark(bookmarkDto, true)
             }
 
             labelList.add(bookmarkControl.orCreateSpeakLabel)
 
-            bookmarkControl.setBookmarkLabels(bookmarkDto, labelList)
+            bookmarkControl.setBookmarkLabels(bookmarkDto, labelList, doNotSync)
             Log.d("SpeakBookmark", "Saved bookmark into $bookmarkDto, ${settings.playbackSettings.speed}")
             this.bookmarkDto = bookmarkDto
         }

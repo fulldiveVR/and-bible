@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -19,6 +19,7 @@
 package net.bible.service.history
 
 import net.bible.android.control.page.window.Window
+import java.util.*
 
 /**
  * An item in the History List
@@ -29,7 +30,9 @@ interface HistoryItem {
 
     val description: CharSequence
 
-    val screen: Window
+    val window: Window
+
+    val createdAt: Date
 
     // do back to the state at this point
     fun revertTo()

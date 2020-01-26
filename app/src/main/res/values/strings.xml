@@ -6,7 +6,7 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
  @author Martin Denham [mjdenham at gmail dot com]
 -->
 <resources>
-    <string name="app_name">MoneyBible</string>
+    <string name="app_name">And Bible</string>
 
     <!-- Startup & Help -->
     <string name="splash_top_text">\n\"And God said, \'Let there be light,\' and there was light.\"\nGenesis 1:3</string>
@@ -36,6 +36,14 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="help_search_text">Search text can include special characters like *, ?, AND, OR, NOT
         (see "Apache Lucene - Query Parser Syntax" for more details)
     </string>
+    <string name="help_workspaces_title">Workspaces</string>
+    <string name="help_workspaces_text">
+        Workspaces allow having ontext-dependent working environments. Workspace functions
+        can be accessed via options menu (top-right corner). Quick way to access workspaces is
+        by swipe-down gesture from toolbar. You may use swipe-left and swipe-right gestures to
+        switch to previous / next workspace.
+    </string>
+
     <string name="help_contextmenus_title">Context Menus</string>
     <string name="help_contextmenus_text">
         Long press on the Bible view to open the context menu for actions affecting the current verse.
@@ -44,7 +52,7 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     </string>
 
     <string name="version_text">Version %s</string>
-    <string name="no_sdcard_error">Please insert an SD card and start MoneyBible again.</string>
+    <string name="no_sdcard_error">Please insert an SD card and start And Bible again.</string>
 
     <!-- Main menu -->
     <string name="menu">Menu</string>
@@ -55,6 +63,8 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="history">History</string>
     <string name="speak">Speak</string>
     <string name="help">Help</string>
+    <string name="other">Other</string>
+
     <string name="administration">Administration</string>
 
     <string name="rate_application">Rate &amp; Review in Google Play</string>
@@ -113,17 +123,21 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="prefs_night_mode_title">Night mode</string>
     <string name="prefs_night_mode_summary">For easier reading in the dark</string>
     <string name="prefs_night_mode_automatic">Automatic</string>
+    <string name="prefs_night_mode_system">System</string>
+
     <string name="prefs_navigate_to_verse_title">Navigate to verse</string>
     <string name="prefs_navigate_to_verse_summary">Choose verse (and chapter) when selecting a passage</string>
     <string name="prefs_open_links_in_special_window_title">Open links in special window</string>
     <string name="prefs_open_links_in_special_window_summary">For quicker display of cross-references and Strongs</string>
-    <string name="prefs_text_size_title">Text size</string>
+    <string name="prefs_text_size_title">Text font size</string>
+    <string name="prefs_text_size_menuitem">Change font size (%d pt)</string>
     <string name="prefs_text_size_summary">See more or see more clearly</string>
     <string name="prefs_text_size_sample_text">Sample text</string>
     <string name="prefs_screen_keep_on_title">Keep screen on</string>
     <string name="prefs_screen_keep_on_summary">Prevent screen sleeping while using this app</string>
     <string name="prefs_interface_locale_title">Application language</string>
     <string name="prefs_interface_locale_summary">Select custom user interface language</string>
+    <string name="reset_fontsize">Reset</string>
 
     <string name="prefs_split_mode_vertical">Vertical</string>
     <string name="prefs_split_mode_horizontal">Horizontal</string>
@@ -135,7 +149,7 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="prefs_request_sdcard_permission_title">Manually installed documents exist</string>
     <string name="prefs_request_sdcard_permission_summary">Enable use of manually installed documents from the jsword folder on the SD card</string>
 
-    <string name="bible_text_options">Bible text options</string>
+    <string name="text_options">Text options</string>
     <string name="auto_fullscreen">Fullscreen by scrolling</string>
     <string name="switch_split_mode">Switch split mode</string>
     <string name="reversed_split_mode">Reversed split mode</string>
@@ -149,7 +163,9 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="windowMinimise">Minimise</string>
     <string name="windowSynchronise">Synchronise</string>
     <string name="windowMoveFirst">Move first</string>
-    
+    <string name="move_window">Move window</string>
+    <string name="move_window_to_position">To position %s</string>
+
     <!-- Notes screen -->
     <string name="no_chapter_notes">No notes exist in this chapter</string>
     <string name="no_verse_notes">No notes exist in this verse</string>
@@ -171,7 +187,11 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="download_refreshing_book_list">Refreshing list of available documents</string>
     <string name="download_refresh_book_list_menu_item">Refresh</string>
     <string name="error_downloading">An error occurred downloading.  Please check your internet connection.</string>
-    <string name="no_internet_connection">Could not connect to the internet</string>
+    <string name="no_internet_connection">
+        Could not connect to Crosswire\'s module repository.
+        Server might be down or you might not have internet connection.
+        Please try again later.
+    </string>
     <string name="storage_space_warning">Insufficient local storage space.</string>
     <string name="too_many_jobs">Too many tasks executing.  Please wait for some to finish and try again.</string>
     <string name="document_not_installed">Please download \'%s\'</string>
@@ -180,8 +200,8 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="install_zip">Load Document From Zip</string>
     <string name="install_zip_module">Install Bible Module</string>
     <string name="install_zip_successfull">Module was installed successfully</string>
-    <string name="extracting_zip_file">Extracting Zip file now...</string>
-    <string name="checking_zip_file">Checking given file...</string>
+    <string name="extracting_zip_file">Extracting Zip file now…</string>
+    <string name="checking_zip_file">Checking given file…</string>
     <string name="invalid_module">File does not contain a valid SWORD module</string>
     <string name="module_already_installed">File contains a module that is already installed</string>
     <string name="install_zip_title">Please wait. Loading Zip file.</string>
@@ -190,7 +210,7 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="rdg_plan_title">Reading Plan</string>
     <string name="rdg_plan_selector_title">Choose a Reading Plan</string>
     <string name="rdg_plan_day">Day %s</string>
-    <string name="rdg_plan_set_start_date">Set Start Date...</string>
+    <string name="rdg_plan_set_start_date">Set Start Date…</string>
     <string name="done">Done</string>
     <string name="reset">Reset</string>
     <string name="reset_plan_question">Are you sure you want to reset this plan?</string>
@@ -245,7 +265,7 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="notes">Footnotes and references</string>
     <string name="copy">Copy</string>
     <string name="share_verse">Share …</string>
-    <string name="share_verse_subject">A Bible verse has been shared with you using MoneyBible</string>
+    <string name="share_verse_subject">A Bible verse has been shared with you using And Bible</string>
     <string name="compare_translations">Compare translations</string>
 
     <!-- Link context menu -->
@@ -413,23 +433,43 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     
     <!-- Backup and restore -->
     <string name="backup_and_restore">Backup &amp; Restore</string>
-    <string name="backup">Backup to ...</string>
+    <string name="backup">Backup to…</string>
     <string name="backup_success">My Notes and Bookmarks saved in %s on the SD card</string>    
-    <string name="restore">Restore from ...</string>
-    <string name="restore_confirmation">Overwrite My Notes and Bookmarks?</string>    
-    <string name="restore_success">My Notes and Bookmarks restored successfully</string>
+    <string name="restore">Restore from…</string>
+    <string name="restore_confirmation">Overwrite My Notes, Bookmarks, Reading Plans and Workspaces?</string>
+    <string name="restore_success">My Notes, Bookmarks, Reading Plans and Workspaces restored successfully</string>
     <string name="error_no_backup_file">A backup file could not be found</string>
+    <string name="loading_backup">Loading database from backup…</string>
 
-    <string name="backup_email_subject">MoneyBible database backup</string>
-    <string name="backup_email_message">Your MoneyBible database containing bookmarks and notes is attached</string>
-    <string name="backup_storage">Backup to storage</string>
-    <string name="restore_storage">Restore from storage</string>
+    <string name="backup_email_subject">And Bible database backup</string>
+    <string name="backup_email_message">Your And Bible database containing bookmarks, notes, reading plans and workspaces is attached</string>
     <string name="restore_unsuccessfull">Restoring database was unsuccessful. Perhaps you gave invalid database file.</string>
     <!-- About -->
     <string name="about_copyright">Copyright: %s</string>
     <string name="about_version">Version: %s</string>
     <string name="about_versification">Versification: %s</string>
-    
+    <string name="send_backup_file">Send a backup file</string>
+
+    <!-- Bug reporting -->
+    <string name="send_bug_report_title">Report a bug</string>
+    <string name="report_bug_email_subject">Bug report for And Bible %s</string>
+    <string name="report_bug_email_message">
+        --- WRITE BUG REPORT ABOVE THIS LINE ---\n
+        Instructions:\n
+        Tell us briefly what did you do / what happened when issue
+        took place. Example: \n
+        \n
+        1. Opened app\n
+        2. Clicked window menu\n
+         -> Crash\n
+        \n
+        Sometimes screenshot also is beneficial in resolving issues.
+        Please use this function to report as soon as you have noticed it taking place.
+        You can also use this function after opening app, after crash has taken place.
+        \n\n
+        Device info: \n
+        %s</string>
+
     <!-- Document types -->
     <string name="doc_type_bible">Bible</string>
     <string name="doc_type_commentary">Commentary</string>
@@ -446,7 +486,7 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="error">Error</string>
-    <string name="please_wait">Please wait...</string>
+    <string name="please_wait">Please wait…</string>
     <string name="all">All</string>
     <string name="default_value">@string/lang_default</string>
     <string name="edit">Edit</string>
@@ -456,6 +496,7 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <!-- Errors -->
     <string name="report_error">Send Report</string>
     <string name="error_occurred">An error has occurred</string>
+    <string name="error_occurred_with_link">An error has occurred. %s</string>
     <string name="error_no_content">No content for selected verse</string>
     <string name="error_page_too_large">Page is too large to be loaded</string>
     <string name="error_key_not_in_document">Not found in document</string>
@@ -498,6 +539,6 @@ TODO: error and download_document_confirm_prefix need to be parameterized rather
     <string name="beta_notice_github">Github</string>
     <string name="beta_notice_dismiss">Dismiss</string>
     <string name="beta_notice_dismiss_until_update">Dismiss until next update</string>
-
-    <string name="comFulldiveEventsender_textPopupCustom">reading the Bible</string>
+    <string name="font_size_pt">%d pt</string>
+    <string name="auto_fullscreen_summary">Switch automatically to fullscreen when scrolling text</string>
 </resources>

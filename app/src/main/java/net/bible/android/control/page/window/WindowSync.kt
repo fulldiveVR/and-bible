@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -19,151 +19,141 @@
 package net.bible.android.control.page.window
 
 import net.bible.android.control.event.ABEventBus
-import net.bible.android.control.event.apptobackground.AppToBackgroundEvent
-import net.bible.android.control.event.passage.PassageChangedEvent
 import net.bible.android.control.event.window.ScrollSecondaryWindowEvent
-import net.bible.android.control.event.window.UpdateSecondaryWindowEvent
 import net.bible.android.control.page.ChapterVerse
 import net.bible.android.control.page.CurrentPage
-import net.bible.android.control.page.UpdateTextTask
 import net.bible.service.device.ScreenSettings
 
 import org.crosswire.jsword.book.BookCategory
 import org.crosswire.jsword.passage.Key
 import org.crosswire.jsword.passage.KeyUtil
 import org.crosswire.jsword.passage.Verse
-import org.crosswire.jsword.versification.Versification
+import kotlin.math.max
 
 class WindowSync(private val windowRepository: WindowRepository) {
-
-    private var isFirstTimeInit = true
-    private var resynchRequired = false
-    private var screenPreferencesChanged = false
-
-    private var lastSynchdInactiveWindowKey: Key? = null
     private var lastSynchWasInNightMode: Boolean = false
+    private var lastForceSyncAll: Long = System.currentTimeMillis()
+    private var lastForceSyncBibles: Long = System.currentTimeMillis()
 
-    init {
-        ABEventBus.getDefault().register(this)
+    fun setResyncRequired() {
+        lastForceSyncAll = System.currentTimeMillis()
     }
 
-    fun onEvent(event: PassageChangedEvent) {
-        synchronizeScreens()
+    fun setResyncBiblesRequired() {
+        lastForceSyncBibles = System.currentTimeMillis()
     }
 
-    /**
-     * Save/restore dynamic state that is not automatically saved as Preferences
-     */
-    fun onEvent(event: AppToBackgroundEvent) {
-        // ensure nonactive screen is initialised when returning from background
-        lastSynchdInactiveWindowKey = null
-    }
+    fun reloadAllWindows(force: Boolean = false) {
+        ABEventBus.getDefault().post(IncrementBusyCount())
+        if(force)
+            setResyncRequired()
 
-    fun synchronizeAllScreens() {
         for (window in windowRepository.visibleWindows) {
-            window.updateText()
+            val bookCategory = window.pageManager.currentPage.currentDocument?.bookCategory
+            val isBible = BookCategory.BIBLE == bookCategory
+
+            if(lastForceSyncAll > window.lastUpdated || (isBible && lastForceSyncBibles > window.lastUpdated))
+                window.updateText()
         }
+        ABEventBus.getDefault().post(DecrementBusyCount())
     }
 
     /** Synchronise the inactive key and inactive screen with the active key and screen if required
      */
-    @JvmOverloads
-    fun synchronizeScreens(sourceWindow_: Window? = null) {
+
+    fun synchronizeWindows(sourceWindow_: Window? = null) {
+        ABEventBus.getDefault().post(IncrementBusyCount())
         val sourceWindow = sourceWindow_?: windowRepository.activeWindow
         val activePage = sourceWindow.pageManager.currentPage
         var targetActiveWindowKey = activePage.singleKey
 
         val inactiveWindowList = windowRepository.getWindowsToSynchronise(sourceWindow)
-        for (inactiveWindow in inactiveWindowList) {
-            val inactivePage = inactiveWindow.pageManager.currentPage
-            val inactiveWindowKey = inactivePage.singleKey
-            var inactiveUpdated = false
-            val isTotalRefreshRequired = isFirstTimeInit
-                    || lastSynchWasInNightMode != ScreenSettings.isNightMode
-                    || screenPreferencesChanged || resynchRequired
 
-            if (isSynchronizableVerseKey(activePage) && sourceWindow.isSynchronised
-                    && inactiveWindow.isSynchronised) {
-                // inactive screen may not be displayed (e.g. if viewing a dict) but if switched to the key must be correct
-                // Only Bible and cmtry are synch'd and they share a Verse key
-                updateInactiveBibleKey(inactiveWindow, targetActiveWindowKey)
+        if(lastSynchWasInNightMode != ScreenSettings.nightMode) {
+            lastForceSyncAll = System.currentTimeMillis()
+        }
 
-                if (isSynchronizableVerseKey(inactivePage) && inactiveWindow.isVisible) {
-                    // re-get as it may have been mapped to the correct v11n
-                    // this looks odd but the inactivePage key has already been updated to the activeScreenKey
-                    targetActiveWindowKey = inactivePage.singleKey
+        if(isSynchronizableVerseKey(activePage) && (sourceWindow.isSynchronised)) {
+            for (inactiveWindow in inactiveWindowList) {
+                val inactivePage = inactiveWindow.pageManager.currentPage
+                val inactiveWindowKey = inactivePage.singleKey
+                var inactiveUpdated = false
 
-                    // prevent infinite loop as each screen update causes a synchronise by comparing last key
-                    // only update pages if empty or synchronised
-                    if (isFirstTimeInit || resynchRequired ||
-                            targetActiveWindowKey != lastSynchdInactiveWindowKey) {
-                        updateInactiveWindow(inactiveWindow, inactivePage, targetActiveWindowKey,
-                                lastSynchdInactiveWindowKey, isTotalRefreshRequired)
-                        inactiveUpdated = true
+                if (inactiveWindow.isSynchronised) {
+                    // inactive screen may not be displayed (e.g. if viewing a dict) but if switched to the key must be correct
+                    // Only Bible and cmtry are synch'd and they share a Verse key
+                    updateInactiveBibleKey(inactiveWindow, targetActiveWindowKey)
+
+                    if (isSynchronizableVerseKey(inactivePage) && inactiveWindow.isVisible) {
+                        // re-get as it may have been mapped to the correct v11n
+                        // this looks odd but the inactivePage key has already been updated to the activeScreenKey
+                        targetActiveWindowKey = inactivePage.singleKey
+
+                        // prevent infinite loop as each screen update causes a synchronise by comparing last key
+                        // only update pages if empty or synchronised
+                        if (inactiveWindow.lastUpdated < lastForceSyncAll
+                            || targetActiveWindowKey != inactiveWindowKey) {
+                            updateInactiveWindow(inactiveWindow, inactivePage, targetActiveWindowKey, inactiveWindowKey)
+                            inactiveUpdated = true
+                        }
                     }
                 }
-            }
 
-            // force inactive screen to display something otherwise it may be initially blank
-            // or if nightMode has changed then force an update
-            if (!inactiveUpdated && isTotalRefreshRequired) {
-                // force an update of the inactive page to prevent blank screen
-                updateInactiveWindow(inactiveWindow, inactivePage, inactiveWindowKey, inactiveWindowKey,
-                        isTotalRefreshRequired)
-                inactiveUpdated = true
-            }
+                // force inactive screen to display something otherwise it may be initially blank
+                // or if nightMode has changed then force an update
+                if (!inactiveUpdated && inactiveWindow.lastUpdated < max(lastForceSyncBibles, lastForceSyncAll)) {
+                    // force an update of the inactive page to prevent blank screen
+                    updateInactiveWindow(inactiveWindow, inactivePage, inactiveWindowKey, inactiveWindowKey)
+                }
 
+            }
         }
-        lastSynchdInactiveWindowKey = targetActiveWindowKey
-        lastSynchWasInNightMode = ScreenSettings.isNightMode
-        screenPreferencesChanged = false
-        resynchRequired = false
-        isFirstTimeInit = false
+
+        lastSynchWasInNightMode = ScreenSettings.nightMode
+        ABEventBus.getDefault().post(DecrementBusyCount())
     }
 
     /** Only call if screens are synchronised.  Update synch'd keys even if inactive page not
      * shown so if it is shown then it is correct
      */
-    private fun updateInactiveBibleKey(inactiveWindow: Window, activeWindowKey: Key) {
+    private fun updateInactiveBibleKey(inactiveWindow: Window, activeWindowKey: Key?) {
         inactiveWindow.pageManager.currentBible.doSetKey(activeWindowKey)
     }
 
     /** refresh/synch inactive screen if required
      */
-    private fun updateInactiveWindow(inactiveWindow: Window, inactivePage: CurrentPage?,
-                                     targetKey: Key?, inactiveWindowKey: Key?, forceRefresh: Boolean) {
+    private fun updateInactiveWindow(inactiveWindow: Window, inactivePage: CurrentPage?, targetKey: Key?, inactiveWindowKey: Key?) {
         // standard null checks
         if (targetKey != null && inactivePage != null) {
             // Not just bibles and commentaries get this far so NOT always fine to convert key to verse
-            var targetVerse: Verse? = null
-            var targetV11n: Versification? = null
-            if (targetKey is Verse) {
-                targetVerse = KeyUtil.getVerse(targetKey)
-                targetV11n = targetVerse!!.versification
-            }
-
-            var currentVerse: Verse? = null
-            val isGeneralBook = BookCategory.GENERAL_BOOK == inactivePage.currentDocument.bookCategory
-            val isUnsynchronizedCommentary = !inactiveWindow.isSynchronised
-                    && BookCategory.COMMENTARY == inactivePage.currentDocument.bookCategory
-
-            if (inactiveWindowKey != null && inactiveWindowKey is Verse) {
-                currentVerse = KeyUtil.getVerse(inactiveWindowKey)
-            }
+            val targetVerse = if (targetKey is Verse) KeyUtil.getVerse(targetKey) else null
+            val bookCategory = inactivePage.currentDocument?.bookCategory
+            val isGeneralBook = BookCategory.GENERAL_BOOK == bookCategory
+            val isBible = BookCategory.BIBLE == bookCategory
+            val isCommentary = BookCategory.COMMENTARY == bookCategory
+            val isUnsynchronizedCommentary = !inactiveWindow.isSynchronised && isCommentary
+            val isSynchronizedCommentary = inactiveWindow.isSynchronised && isCommentary
+            val currentVerse = if (inactiveWindowKey is Verse) {KeyUtil.getVerse(inactiveWindowKey)} else null
 
             // update inactive screens as smoothly as possible i.e. just jump/scroll if verse is on current page
-            if (!forceRefresh &&
-                    BookCategory.BIBLE == inactivePage.currentDocument.bookCategory &&
-                    currentVerse != null && targetVerse != null && targetV11n!!.isSameChapter(targetVerse, currentVerse)) {
-                ABEventBus.getDefault().post(
-                        ScrollSecondaryWindowEvent(inactiveWindow, ChapterVerse.fromVerse(targetVerse))
-                )
-            } else if ((isGeneralBook || isUnsynchronizedCommentary) && inactiveWindow.initialized) {
-                //UpdateInactiveScreenTextTask().execute(inactiveWindow)
-                // Do not update! Updating would reset page position.
-            } else {
-                // synchronized commentary
+            if((lastForceSyncAll > inactiveWindow.lastUpdated) || (isBible && lastForceSyncBibles > inactiveWindow.lastUpdated)) {
                 inactiveWindow.updateText()
+
+            } else {
+                if (isBible && currentVerse != null && targetVerse != null) {
+                    if(targetVerse.book == currentVerse.book && inactiveWindow.hasChapterLoaded(targetVerse.chapter)) {
+                        ABEventBus.getDefault()
+                            .post(ScrollSecondaryWindowEvent(inactiveWindow, ChapterVerse.fromVerse(targetVerse)))
+                    } else if(targetVerse != currentVerse) {
+                        inactiveWindow.updateText()
+                    }
+                } else if ((isGeneralBook || isUnsynchronizedCommentary) && inactiveWindow.initialized) {
+                    //UpdateInactiveScreenTextTask().execute(inactiveWindow)
+                    // Do not update! Updating would reset page position.
+                } else if ( isSynchronizedCommentary && targetVerse != currentVerse ) {
+                    // synchronized commentary
+                    inactiveWindow.updateText()
+                }
             }
         }
     }
@@ -184,12 +174,7 @@ class WindowSync(private val windowRepository: WindowRepository) {
         return result
     }
 
-
-    fun setResynchRequired(resynchRequired: Boolean) {
-        this.resynchRequired = resynchRequired
-    }
-
-    fun setScreenPreferencesChanged(screenPreferencesChanged: Boolean) {
-        this.screenPreferencesChanged = screenPreferencesChanged
+    companion object {
+        const val TAG = "WindowSync"
     }
 }

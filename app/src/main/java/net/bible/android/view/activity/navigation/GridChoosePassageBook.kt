@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -137,7 +137,7 @@ class GridChoosePassageBook : CustomTitlebarActivityBase(R.menu.choose_passage_b
         if(customTitle != null)
             title = customTitle
 
-        val workspaceName = SharedActivityState.getCurrentWorkspaceName()
+        val workspaceName = SharedActivityState.currentWorkspaceName
         title = "${title} (${workspaceName})"
 
         val navigateToVerseDefault = CommonUtils.sharedPreferences.getBoolean("navigate_to_verse_pref", false)

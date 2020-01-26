@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -23,4 +23,4 @@ package net.bible.android.control.event.passage
  *
  * @author Martin Denham [mjdenham at gmail dot com]
  */
-data class SynchronizeWindowsEvent(val syncAll: Boolean = false)
+data class SynchronizeWindowsEvent(val forceSyncAll: Boolean = false)

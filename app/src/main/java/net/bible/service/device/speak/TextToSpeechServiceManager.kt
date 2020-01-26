@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -457,6 +457,7 @@ class TextToSpeechServiceManager @Inject constructor(
             speakNextChunk()
             isSpeaking = true
             isPaused = false
+            mSpeakTextProvider.isSpeaking = true
             fireStateChangeEvent()
         } else {
             isPaused = false
@@ -506,7 +507,7 @@ class TextToSpeechServiceManager @Inject constructor(
 
         // tts.stop can trigger onUtteranceCompleted so set above flags first to avoid sending of a further text and setting isSpeaking to true
         shutdownTtsEngine()
-        mSpeakTextProvider.stop()
+        mSpeakTextProvider.stop(willContinueAfter)
         clearPauseState()
         fireStateChangeEvent()
     }

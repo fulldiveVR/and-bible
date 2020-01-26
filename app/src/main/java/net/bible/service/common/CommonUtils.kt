@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -41,6 +41,7 @@ import net.bible.android.activity.BuildConfig.GitHash
 import net.bible.android.view.activity.ActivityComponent
 import net.bible.android.view.activity.DaggerActivityComponent
 import net.bible.android.view.activity.page.MainBibleActivity
+import net.bible.android.view.activity.page.MainBibleActivity.Companion.mainBibleActivity
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.time.DateUtils
 import org.crosswire.common.util.IOUtil
@@ -104,7 +105,7 @@ object CommonUtils {
         get() = Build.VERSION.SDK_INT >= 24
 
     val isSplitVertically: Boolean get() {
-        val reverse = sharedPreferences.getBoolean("reverse_split_mode_pref", false)
+        val reverse = mainBibleActivity.windowRepository.windowBehaviorSettings.enableReverseSplitMode
         return if(reverse) !isPortrait else isPortrait
     }
 
@@ -121,7 +122,7 @@ object CommonUtils {
     val isInternetAvailable: Boolean
         get() {
             val testUrl = "http://www.crosswire.org/ftpmirror/pub/sword/packages/"
-            return CommonUtils.isHttpUrlAvailable(testUrl)
+            return isHttpUrlAvailable(testUrl)
         }
 
     val localePref: String?

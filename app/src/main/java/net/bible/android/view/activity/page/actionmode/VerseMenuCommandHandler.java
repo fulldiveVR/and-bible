@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -84,13 +84,11 @@ public class VerseMenuCommandHandler {
 				case R.id.add_bookmark:
 					bookmarkControl.addBookmarkForVerseRange(verseRange);
 					// refresh view to show new bookmark icon
-					PassageChangeMediator.getInstance().forcePageUpdate();
 					isHandled = true;
 					break;
 				case R.id.delete_bookmark:
 					bookmarkControl.deleteBookmarkForVerseRange(verseRange);
 					// refresh view to show new bookmark icon
-					PassageChangeMediator.getInstance().forcePageUpdate();
 					isHandled = true;
 					break;
 				case R.id.edit_bookmark_labels:
@@ -100,6 +98,8 @@ public class VerseMenuCommandHandler {
 				case R.id.myNoteAddEdit:
 					mainActivity.setFullScreen(false);
 					myNoteControl.showMyNote(verseRange);
+					mainActivity.invalidateOptionsMenu();
+					mainActivity.documentViewManager.resetView();
 					isHandled = true;
 					break;
 				case R.id.copy:

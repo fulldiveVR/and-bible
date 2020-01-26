@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -18,27 +18,27 @@
 
 package net.bible.android.control.page.window
 
-import android.content.SharedPreferences
-
-import net.bible.android.BibleApplication
+import android.util.Log
+import net.bible.android.activity.R
 import net.bible.android.control.ApplicationScope
 import net.bible.android.control.event.ABEventBus
 import net.bible.android.control.event.apptobackground.AppToBackgroundEvent
 import net.bible.android.control.event.window.CurrentWindowChangedEvent
 import net.bible.android.control.page.CurrentPageManager
 import net.bible.android.control.page.window.WindowLayout.WindowState
+import net.bible.service.common.CommonUtils.sharedPreferences
 import net.bible.service.common.Logger
+import net.bible.service.db.DatabaseContainer
+import net.bible.android.database.WorkspaceEntities
+import net.bible.android.view.activity.base.SharedActivityState
+import net.bible.service.common.CommonUtils.getResourceString
 import net.bible.service.history.HistoryManager
-
-import org.apache.commons.lang3.StringUtils
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-
-import java.util.ArrayList
-
 import javax.inject.Inject
 import javax.inject.Provider
+import kotlin.math.min
+
+class IncrementBusyCount
+class DecrementBusyCount
 
 @ApplicationScope
 open class WindowRepository @Inject constructor(
@@ -48,14 +48,34 @@ open class WindowRepository @Inject constructor(
     private val historyManagerProvider: Provider<HistoryManager>
 )
 {
+    var windowList: MutableList<Window> = ArrayList()
+    private var busyCount: Int = 0
+    var textDisplaySettings = WorkspaceEntities.TextDisplaySettings.default
+    var windowBehaviorSettings = WorkspaceEntities.WindowBehaviorSettings.default
 
-    private var windowList: MutableList<Window> = ArrayList()
-    var dedicatedLinksWindow = LinksWindow(WindowState.CLOSED, currentPageManagerProvider.get())
-        private set
+    val isBusy get() = busyCount > 0
 
-    private var maxWindowNoUsed = 0
 
+    fun onEvent(event: IncrementBusyCount) {
+        synchronized(this) {
+            busyCount ++
+        }
+    }
+
+    fun onEvent(event: DecrementBusyCount) {
+        synchronized(this) {
+            busyCount --
+        }
+    }
+
+    var id: Long = 0
     var name = ""
+        set(value) {
+            SharedActivityState.currentWorkspaceName = value
+            field = value
+        }
+
+    val dao get() = DatabaseContainer.db.workspaceDao()
 
     private val logger = Logger(this.javaClass.name)
 
@@ -67,19 +87,39 @@ open class WindowRepository @Inject constructor(
             return windows
         }
 
+    init {
+        ABEventBus.getDefault().safelyRegister(this)
+    }
+
+    fun initialize() {
+        if(::_activeWindow.isInitialized) return
+        id = sharedPreferences.getLong("current_workspace_id", 0)
+        if(id == 0L || dao.workspace(id) == null) {
+            id = dao.insertWorkspace(WorkspaceEntities.Workspace(getResourceString(R.string.workspace_number, 1)))
+            sharedPreferences.edit().putLong("current_workspace_id", id).apply()
+        }
+        loadFromDb(id)
+    }
+
+    private lateinit var _activeWindow: Window
+
     // 1 based screen no
-    var activeWindow = getDefaultActiveWindow()
-        set(newActiveWindow) {
-            if (newActiveWindow != this.activeWindow) {
-                field = newActiveWindow
+    var activeWindow: Window
+        get() {
+            initialize()
+            return _activeWindow
+        }
+        set (newActiveWindow) {
+            if (!::_activeWindow.isInitialized || newActiveWindow != this.activeWindow) {
+                _activeWindow = newActiveWindow
+                Log.d(TAG, "Active window: ${newActiveWindow}")
                 ABEventBus.getDefault().post(CurrentWindowChangedEvent(this.activeWindow))
             }
         }
 
-    init {
-        //restoreState()
-        ABEventBus.getDefault().safelyRegister(this)
-    }
+
+    lateinit var dedicatedLinksWindow: LinksWindow
+        private set
 
     // links window is still displayable in maximised mode but does not have the requested MAXIMIZED state
     // should only ever be one maximised window
@@ -98,7 +138,7 @@ open class WindowRepository @Inject constructor(
 
     val maximisedScreens get() = getWindows(WindowState.MAXIMISED)
 
-    val minimisedScreens  get() = getWindows(WindowState.MINIMISED)
+    val minimisedWindows  get() = getWindows(WindowState.MINIMISED)
 
     val minimisedAndMaximizedScreens: List<Window>
         get() = windows.filter {
@@ -110,18 +150,17 @@ open class WindowRepository @Inject constructor(
 
     val isMultiWindow get() = visibleWindows.size > 1
 
-    private val defaultState get() = WindowState.SPLIT
+    private val defaultState = WindowState.SPLIT
 
     val firstVisibleWindow: Window get() = windowList.find { it.isVisible }!!
 
-    /**
-     * Return window no larger than any windows created during this session and larger than 0
-     */
-    private val nextWindowNo get() = maxWindowNoUsed + 1
+    private fun getDefaultActiveWindow() =
+        windows.find { it.isVisible } ?: createNewWindow(true)
 
-    private fun getDefaultActiveWindow() = windows.find { it.isVisible } ?: addNewWindow(nextWindowNo)
-    fun setDefaultActiveWindow() {
-        activeWindow = getDefaultActiveWindow()
+    fun setDefaultActiveWindow(): Window {
+        val newWindow = getDefaultActiveWindow()
+        activeWindow = newWindow
+        return newWindow
     }
 
     private fun addLinksWindowIfVisible(windows: MutableList<Window>) {
@@ -132,10 +171,11 @@ open class WindowRepository @Inject constructor(
 
     private fun getWindows(state: WindowState)= windows.filter { it.windowLayout.state === state}
 
-    fun getWindow(screenNo: Int): Window? = windows.find {it.screenNo == screenNo}
+    fun getWindow(windowId: Long): Window? = windows.find {it.id == windowId}
 
     fun addNewWindow(): Window {
-        val newWindow = addNewWindow(nextWindowNo)
+        val newWindow = createNewWindow()
+        newWindow.windowLayout.weight = activeWindow.windowLayout.weight
 
         if(isMaximisedState) {
             activeWindow.windowLayout.state = WindowState.MINIMISED
@@ -150,8 +190,6 @@ open class WindowRepository @Inject constructor(
 
     fun getWindowsToSynchronise(sourceWindow: Window?): List<Window> {
         val windows = visibleWindows
-        if(isMaximisedState)
-            windows.addAll(minimisedScreens)
         if (sourceWindow != null) {
             windows.remove(sourceWindow)
         }
@@ -164,7 +202,7 @@ open class WindowRepository @Inject constructor(
 
         // has the active screen been minimised?
         if (activeWindow == window) {
-            activeWindow = getDefaultActiveWindow()
+            setDefaultActiveWindow()
         }
     }
 
@@ -172,22 +210,22 @@ open class WindowRepository @Inject constructor(
         val wasMaximized = isMaximisedState
 
         window.windowLayout.state = WindowState.CLOSED
+        val currentPos = windowList.indexOf(window)
 
         // links window is just closed not deleted
         if (!window.isLinksWindow) {
+            dao.deleteWindow(window.id)
             destroy(window)
             if(wasMaximized) {
-                val lastScreen = minimisedScreens.last()
-                lastScreen.isMaximised = true
-                activeWindow = lastScreen
-            }
-        }
-        if (!wasMaximized) activeWindow = getDefaultActiveWindow()
+                activeWindow = windowList[min(currentPos, windowList.size - 1)]
+                activeWindow.isMaximised = windowList.size > 1
+            } else setDefaultActiveWindow()
+        } else setDefaultActiveWindow()
     }
 
     private fun destroy(window: Window) {
         if (!windowList.remove(window)) {
-            logger.error("Failed to remove window " + window.screenNo)
+            logger.error("Failed to remove window " + window.id)
         }
         window.destroy()
     }
@@ -209,11 +247,19 @@ open class WindowRepository @Inject constructor(
         windowList.add(position, window)
     }
 
-    private fun addNewWindow(screenNo: Int): Window {
-        val newScreen = Window(screenNo, defaultState, currentPageManagerProvider.get())
-        maxWindowNoUsed = Math.max(maxWindowNoUsed, screenNo)
-        windowList.add(newScreen)
-        return newScreen
+    private fun createNewWindow(first: Boolean = false): Window {
+        val pageManager = currentPageManagerProvider.get()
+        val winEntity = WorkspaceEntities.Window(
+            id, true, false, false,
+            WorkspaceEntities.WindowLayout(defaultState.toString())
+        ).apply {
+            id = dao.insertWindow(this)
+        }
+
+        val newWindow = Window(winEntity, pageManager, this)
+        dao.insertPageManager(pageManager.entity)
+        windowList.add(if(first) 0 else windowList.indexOf(activeWindow) + 1, newWindow)
+        return newWindow
     }
 
     /**
@@ -223,114 +269,116 @@ open class WindowRepository @Inject constructor(
      */
     fun onEvent(appToBackgroundEvent: AppToBackgroundEvent) {
         if (appToBackgroundEvent.isMovedToBackground) {
-            saveState()
+            saveIntoDb()
         }
     }
 
-    /** restore current page and document state  */
-    fun restoreState() {
-        try {
-            logger.info("Restore instance state for screens")
-            val application = BibleApplication.application
-            val settings = application.appStateSharedPreferences
-            val stateJsonString = settings.getString("windowRepositoryState", null)
-            if(stateJsonString != null)
-                restoreState(stateJsonString)
-        } catch (e: Exception) {
-            logger.error("Restore error", e)
-        }
-        activeWindow = getDefaultActiveWindow()
-    }
+    fun saveIntoDb() {
+        Log.d(TAG, "saveIntoDb")
+        dao.updateWorkspace(WorkspaceEntities.Workspace(name, id, textDisplaySettings, windowBehaviorSettings))
 
-    /** called during app close down to save state
-     *
-     * @param outState
-     */
-    fun saveState(outState: SharedPreferences = BibleApplication.application.appStateSharedPreferences) {
-        logger.info("save state")
-        try {
-            val editor = outState.edit()
-            editor.putString("windowRepositoryState", dumpState())
-            editor.apply()
-        } catch (je: JSONException) {
-            logger.error("Saving window state", je)
-        }
+        val historyManager = historyManagerProvider.get()
+        val allWindows = ArrayList(windowList)
+        allWindows.add(dedicatedLinksWindow)
 
-    }
-
-    fun dumpState(): String {
-        val windowRepositoryStateObj = JSONObject()
-        val windowStateArray = JSONArray()
-        for (window in windowList) {
-            try {
-                if (window.windowLayout.state !== WindowState.CLOSED) {
-                    windowStateArray.put(window.stateJson)
-                }
-            } catch (je: JSONException) {
-                logger.error("Error saving screen state", je)
+        val windowEntities = allWindows.mapIndexed { i, it ->
+            dao.updateHistoryItems(it.id, historyManager.getEntities(it.id))
+            it.entity.apply {
+                orderNumber = i
             }
         }
 
-        windowRepositoryStateObj.put("windowState", windowStateArray)
-        windowRepositoryStateObj.put("name", name)
-        windowRepositoryStateObj.put("dedicatedLinksWindow", dedicatedLinksWindow.stateJson)
-        windowRepositoryStateObj.put("history", historyManagerProvider.get().dumpString)
-        return windowRepositoryStateObj.toString()
+        val pageManagers = allWindows.map {
+            val currentPosition = it.bibleView?.currentPosition
+            if(currentPosition != null) {
+                it.pageManager.currentPage.currentYOffsetRatio = currentPosition
+            }
+            it.pageManager.entity
+        }
+
+        dao.updateWindows(windowEntities)
+        dao.updatePageManagers(pageManagers)
     }
 
     /** called during app start-up to restore previous state
      *
      * @param inState
      */
-    fun restoreState(stateJsonString: String) {
-        logger.info("restore state")
-        if (StringUtils.isNotEmpty(stateJsonString)) {
-            clear()
-            try {
-                val windowRepositoryState = JSONObject(stateJsonString)
-                val windowState = windowRepositoryState.getJSONArray("windowState")
-                name = windowRepositoryState.optString("name")
 
-                val linksWindow = try {
-                    windowRepositoryState.getJSONObject("dedicatedLinksWindow")
-                } catch (e: JSONException) {
-                    null
-                }
-
-                if(linksWindow != null) {
-                    dedicatedLinksWindow.restoreState(linksWindow)
-                }
-                else {
-                    close(dedicatedLinksWindow)
-                }
-
-                if (windowState.length() > 0) {
-
-                    // remove current (default) state before restoring
-
-                    for (i in 0 until windowState.length()) {
-                        try {
-                            val window = Window(currentPageManagerProvider.get())
-                            window.restoreState(windowState.getJSONObject(i))
-                            maxWindowNoUsed = Math.max(maxWindowNoUsed, window.screenNo)
-                            windowList.add(window)
-                        } catch (je: JSONException) {
-                            logger.error("Error restoring screen state", je)
-                        }
-
-                    }
-                }
-                historyManagerProvider.get().dumpString = windowRepositoryState.optString("history")
-
-            } catch (je: JSONException) {
-                logger.error("Error restoring screen state", je)
+    fun loadFromDb(workspaceId: Long) {
+        Log.d(TAG, "onLoadDb ${workspaceId}")
+        val entity = dao.workspace(workspaceId) ?: dao.firstWorkspace()
+            ?: WorkspaceEntities.Workspace("").apply{
+                id = dao.insertWorkspace(this)
             }
+        clear()
+
+        id = entity.id
+        name = entity.name
+
+        textDisplaySettings = entity.textDisplaySettings?: WorkspaceEntities.TextDisplaySettings.default
+        windowBehaviorSettings = entity.windowBehaviorSettings?: WorkspaceEntities.WindowBehaviorSettings.default
+
+        val linksWindowEntity = dao.linksWindow(id) ?: WorkspaceEntities.Window(
+            id, false, false, true,
+            WorkspaceEntities.WindowLayout(WindowState.CLOSED.toString())
+        ).apply {
+            id = dao.insertWindow(this)
         }
-        activeWindow = getDefaultActiveWindow()
+
+        val linksPageManagerEntity = dao.pageManager(linksWindowEntity.id)
+
+        if(!::dedicatedLinksWindow.isInitialized) {
+            val pageManager = currentPageManagerProvider.get()
+            pageManager.restoreFrom(linksPageManagerEntity)
+            dedicatedLinksWindow = LinksWindow(linksWindowEntity, pageManager, this)
+        } else {
+            dedicatedLinksWindow.restoreFrom(linksWindowEntity, linksPageManagerEntity)
+        }
+        val historyManager = historyManagerProvider.get()
+        dao.windows(id).forEach {
+            val pageManager = currentPageManagerProvider.get()
+            pageManager.restoreFrom(dao.pageManager(it.id))
+            val window = Window(it, pageManager, this)
+            windowList.add(window)
+            historyManager.restoreFrom(window, dao.historyItems(it.id))
+        }
+        setDefaultActiveWindow()
     }
 
-    fun clear() {
-        windowList.toList().forEach { w -> destroy(w)}
+    fun clear(destroy: Boolean = false) {
+        windowList.forEach {
+            it.bibleView?.listenEvents = false
+            if(destroy)
+                it.destroy()
+        }
+        if(::dedicatedLinksWindow.isInitialized) {
+            dedicatedLinksWindow.bibleView?.listenEvents = false
+        }
+        windowList.clear()
+        historyManagerProvider.get().clear()
         name = ""
+    }
+
+    fun updateWindowTextDisplaySettings(type: WorkspaceEntities.TextDisplaySettings.Id, value: Boolean) {
+        windowList.forEach {
+            val winValue = it.pageManager.textDisplaySettings.getBooleanValue(type)
+            if (winValue == value) {
+                it.pageManager.textDisplaySettings.setNonSpecific(type)
+            }
+        }
+    }
+
+    fun updateWindowFontSizes(fontSize: Int) {
+        windowList.forEach {
+            val winValue = it.pageManager.textDisplaySettings.fontSize
+            if (winValue == fontSize) {
+                it.pageManager.textDisplaySettings.fontSize = null
+            }
+        }
+    }
+
+    companion object {
+        private const val TAG = "WinRep BibleView"
     }
 }

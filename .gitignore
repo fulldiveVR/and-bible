@@ -222,3 +222,4 @@ fabric.properties
 /app/src/main/assets/web/.sourcemaps/
 /app/src/main/assets/web/loader.js
 /app/bibleview-js/dist/
+/db/build/

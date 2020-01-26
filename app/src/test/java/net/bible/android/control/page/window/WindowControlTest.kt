@@ -1,7 +1,7 @@
 package net.bible.android.control.page.window
 
-import android.view.Menu
 
+import android.view.Menu
 import net.bible.android.TestBibleApplication
 import net.bible.android.activity.R
 import net.bible.android.control.event.EventManager
@@ -10,45 +10,46 @@ import net.bible.android.control.mynote.MyNoteDAO
 import net.bible.android.control.page.CurrentPageManager
 import net.bible.android.control.page.window.WindowLayout.WindowState
 import net.bible.android.control.versification.BibleTraverser
+import net.bible.service.download.RepoFactory
 import net.bible.service.history.HistoryManager
 import net.bible.service.sword.SwordContentFacade
 import net.bible.service.sword.SwordDocumentFacade
 import net.bible.test.DatabaseResetter
 import net.bible.test.PassageTestData
-
 import org.crosswire.jsword.book.Books
 import org.crosswire.jsword.passage.Key
 import org.crosswire.jsword.passage.Verse
 import org.crosswire.jsword.versification.BibleBook
 import org.crosswire.jsword.versification.system.Versifications
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
-import org.robolectric.RuntimeEnvironment
-import org.robolectric.fakes.RoboMenu
-
-import javax.inject.Provider
-
-
-import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.CoreMatchers.not
 import org.hamcrest.Matchers.contains
 import org.hamcrest.Matchers.containsInAnyOrder
 import org.hamcrest.Matchers.hasItem
 import org.hamcrest.Matchers.hasSize
 import org.hamcrest.Matchers.isA
+import org.junit.After
 import org.junit.Assert.assertThat
+import org.junit.Before
 import org.junit.Ignore
+import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.reset
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyZeroInteractions
 import org.mockito.hamcrest.MockitoHamcrest.argThat
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
+import org.robolectric.fakes.RoboMenu
+import javax.inject.Provider
 
+@RunWith(RobolectricTestRunner::class)
+@Config(application = TestBibleApplication::class, sdk = [28])
 class WindowControlTest {
-
     private var eventManager: EventManager? = null
 
     private var windowRepository: WindowRepository? = null
@@ -62,10 +63,12 @@ class WindowControlTest {
         val swordContentFactory = mock(SwordContentFacade::class.java)
         val bibleTraverser = mock(BibleTraverser::class.java)
         val myNoteDao = mock(MyNoteDAO::class.java)
-        val mockCurrentPageManagerProvider = Provider { CurrentPageManager(swordContentFactory, SwordDocumentFacade(null), bibleTraverser, myNoteDao) }
+        val repoFactory = mock(RepoFactory::class.java)
         val mockHistoryManagerProvider = Provider { HistoryManager(windowControl!!) }
+        val mockCurrentPageManagerProvider = Provider { CurrentPageManager(swordContentFactory, SwordDocumentFacade(repoFactory), bibleTraverser, myNoteDao, windowRepository!!) }
         windowRepository = WindowRepository(mockCurrentPageManagerProvider, mockHistoryManagerProvider)
         windowControl = WindowControl(windowRepository!!, eventManager!!)
+        windowRepository!!.initialize()
         reset<EventManager>(eventManager)
     }
 
@@ -78,7 +81,7 @@ class WindowControlTest {
     @Throws(Exception::class)
     fun testGetActiveWindow() {
         // should always be one default window that is active by default
-        assertThat(windowControl!!.activeWindow.screenNo, equalTo(1))
+        assertThat(windowControl!!.activeWindow.id, equalTo(2L))
     }
 
     @Test
@@ -163,11 +166,11 @@ class WindowControlTest {
 
         // simple state - just 1 window is minimised
         windowControl!!.minimiseWindow(newWindow2)
-        assertThat(windowRepository!!.minimisedScreens, contains(newWindow2))
+        assertThat(windowRepository!!.minimisedWindows, contains(newWindow2))
 
         // A window is maximized, the others should then all be minimized.
         windowControl!!.maximiseWindow(activeWindow)
-        assertThat<List<Window>>(windowRepository!!.minimisedScreens, containsInAnyOrder(newWindow1, newWindow2))
+        assertThat<List<Window>>(windowRepository!!.minimisedWindows, containsInAnyOrder(newWindow1, newWindow2))
     }
 
     @Test
@@ -311,76 +314,9 @@ class WindowControlTest {
         assertThat(windowControl!!.isMultiWindow, equalTo(false))
     }
 
-    @Test
-    fun testUpdateSynchronisedMenuItem() {
-        val menu = createWindowsMenu()
-
-        windowControl!!.updateOptionsMenu(menu)
-        val synchronisedMenuItem = menu.findItem(R.id.windowSynchronise)
-        assertThat(synchronisedMenuItem.isChecked, equalTo(true))
-
-        windowControl!!.activeWindow.isSynchronised = false
-        windowControl!!.updateOptionsMenu(menu)
-        assertThat(synchronisedMenuItem.isChecked, equalTo(false))
-    }
-
-    @Test
-    fun testDisableMenuItemsIfLinksWindowActive() {
-        val normalWindow = windowControl!!.activeWindow
-        windowControl!!.addNewWindow()
-
-        val menu = createWindowsMenu()
-        windowControl!!.updateOptionsMenu(menu)
-
-        val synchronisedMenuItem = menu.findItem(R.id.windowSynchronise)
-        val moveFirstMenuItem = menu.findItem(R.id.windowMoveFirst)
-        val minimiseMenuItem = menu.findItem(R.id.windowMinimise)
-
-        assertThat(synchronisedMenuItem.isEnabled, equalTo(true))
-        val linksWindow = windowRepository!!.dedicatedLinksWindow
-
-        windowControl!!.activeWindow = linksWindow
-        windowControl!!.updateOptionsMenu(menu)
-
-        assertThat(synchronisedMenuItem.isEnabled, equalTo(false))
-        assertThat(moveFirstMenuItem.isEnabled, equalTo(false))
-        assertThat(minimiseMenuItem.isEnabled, equalTo(false))
-
-        // check menu items are re-enabled when a normal window becomes active
-        windowControl!!.activeWindow = normalWindow
-        windowControl!!.updateOptionsMenu(menu)
-        assertThat(synchronisedMenuItem.isEnabled, equalTo(true))
-    }
-
-    @Test
-    fun testDisableMenuItemsIfOnlyOneWindow() {
-        // the links window should not allow minimise or close to work if only 1 other window
-        windowRepository!!.dedicatedLinksWindow.windowLayout.state = WindowState.SPLIT
-
-        val menu = createWindowsMenu()
-
-        windowControl!!.updateOptionsMenu(menu)
-        val minimiseMenuItem = menu.findItem(R.id.windowMinimise)
-        val closeMenuItem = menu.findItem(R.id.windowClose)
-        assertThat(minimiseMenuItem.isEnabled, equalTo(false))
-        assertThat(closeMenuItem.isEnabled, equalTo(false))
-    }
-
-    @Test
-    fun testCannotMoveFirstWindowFirst() {
-        windowControl!!.addNewWindow()
-
-        val menu = createWindowsMenu()
-
-        windowControl!!.updateOptionsMenu(menu)
-        val moveFirstMenuItem = menu.findItem(R.id.windowMoveFirst)
-        assertThat(moveFirstMenuItem.isEnabled, equalTo(false))
-    }
-
     fun createWindowsMenu(): Menu {
         val menu = RoboMenu(RuntimeEnvironment.application)
         menu.add(0, R.id.windowSynchronise, 0, "Synchronise")
-        menu.add(0, R.id.windowMoveFirst, 0, "First")
         menu.add(0, R.id.windowMinimise, 0, "Minimise")
         menu.add(0, R.id.windowMaximise, 0, "Maximise")
         menu.add(0, R.id.windowClose, 0, "Close")

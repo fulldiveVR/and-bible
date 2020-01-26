@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
+ * Copyright (c) 2020 Martin Denham, Tuomas Airaksinen and the And Bible contributors.
  *
  * This file is part of And Bible (http://github.com/AndBible/and-bible).
  *
@@ -50,6 +50,10 @@ import java.util.*
  * @author Martin Denham [mjdenham at gmail dot com]
  */
 open class BibleApplication : MultiDexApplication() {
+    init {
+        // save to a singleton to allow easy access from anywhere
+        application = this
+    }
     lateinit var applicationComponent: ApplicationComponent
         private set
 
@@ -62,9 +66,6 @@ open class BibleApplication : MultiDexApplication() {
         get() = getSharedPreferences(saveStateTag, Context.MODE_PRIVATE)
 
     override fun onCreate() {
-        // save to a singleton to allow easy access from anywhere
-        application = this
-
         super.onCreate()
         ABEventBus.getDefault().register(this)
 
@@ -120,29 +121,6 @@ open class BibleApplication : MultiDexApplication() {
         val prevInstalledVersion = prefs.getInt("version", -1)
         if (prevInstalledVersion < CommonUtils.applicationVersionNumber && prevInstalledVersion > -1) {
             val editor = prefs.edit()
-
-            // ver 16 and 17 needed text size pref to be changed to int from string
-            if (prevInstalledVersion < 16) {
-                Log.d(TAG, "Upgrading preference")
-                var textSize: String? = "16"
-                if (prefs.contains(TEXT_SIZE_PREF)) {
-                    Log.d(TAG, "text size pref exists")
-                    textSize = try {
-                        prefs.getString(TEXT_SIZE_PREF, "16")
-                    } catch (e: Exception) {
-                        // maybe the conversion has already taken place e.g. in debug environment
-                        Integer.toString(prefs.getInt(TEXT_SIZE_PREF, 16))
-                    }
-
-                    Log.d(TAG, "existing value:" + textSize!!)
-                    editor.remove(TEXT_SIZE_PREF)
-                }
-
-                val textSizeInt = Integer.parseInt(textSize!!)
-                editor.putInt(TEXT_SIZE_PREF, textSizeInt)
-
-                Log.d(TAG, "Finished Upgrading preference")
-            }
 
             // there was a problematic Chinese index architecture before ver 24 so delete any old indexes
             if (prevInstalledVersion < 24) {
@@ -219,9 +197,6 @@ open class BibleApplication : MultiDexApplication() {
     }
 
     companion object {
-
-        private const val TEXT_SIZE_PREF = "text_size_pref"
-
         // this was moved from the MainBibleActivity and has always been called this
         private const val saveStateTag = "MainBibleActivity"
 
