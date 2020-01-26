@@ -17,6 +17,7 @@
  */
 package net.bible.service.sword
 
+import androidx.annotation.Keep
 import org.crosswire.jsword.book.Book
 import org.crosswire.jsword.book.BookCategory
 import org.crosswire.jsword.book.BookFilter
@@ -24,6 +25,7 @@ import org.crosswire.jsword.book.BookFilter
 /**
  * @author Martin Denham [mjdenham at gmail dot com]
  */
+@Keep
 open class AcceptableBookTypeFilter : BookFilter {
     /*
      * (non-Javadoc)

@@ -19,6 +19,7 @@ package net.bible.service.sword
 
 import android.Manifest
 import android.content.pm.PackageManager
+import androidx.annotation.Keep
 import androidx.core.content.ContextCompat
 import net.bible.android.BibleApplication.Companion.application
 import net.bible.android.SharedConstants
@@ -49,6 +50,7 @@ import java.io.File
  *
  * @author Martin Denham [mjdenham at gmail dot com]
  */
+@Keep
 object SwordEnvironmentInitialisation {
     private var isSwordLoaded = false
     private val log = Logger(SwordDocumentFacade::class.java.name)

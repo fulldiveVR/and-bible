@@ -18,6 +18,7 @@
 package net.bible.service.sword
 
 import android.util.Log
+import androidx.annotation.Keep
 import org.crosswire.jsword.book.Book
 import org.crosswire.jsword.passage.Key
 import org.crosswire.jsword.passage.KeyUtil
@@ -36,6 +37,7 @@ import java.util.*
  *
  * @author Martin Denham [mjdenham at gmail dot com]
  */
+@Keep
 class DocumentParseMethod {
     private enum class FailPosition {
         NONE,  //								FIRST_BIBLE_CHAPTER, LAST_BIBLE_CHAPTER, FIRST_AND_LAST_BIBLE_CHAPTER,

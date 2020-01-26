@@ -17,6 +17,7 @@
  */
 package net.bible.service.sword
 
+import androidx.annotation.Keep
 import net.bible.android.control.ApplicationScope
 import net.bible.service.common.CommonUtils.isHttpUrlAvailable
 import net.bible.service.common.Logger
@@ -45,6 +46,7 @@ import javax.inject.Inject
  *
  * @author Martin Denham [mjdenham at gmail dot com]
  */
+@Keep
 @ApplicationScope
 class SwordDocumentFacade @Inject constructor(private val repoFactory: RepoFactory) {
     val bibles: List<Book>

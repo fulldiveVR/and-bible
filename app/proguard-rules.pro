@@ -52,14 +52,8 @@
 }
 
 # keep dynamically loaded Jsword classes
--keep class org.crosswire.jsword.book.install.sword.AndBibleHttpSwordInstallerFactory
--keep class org.crosswire.jsword.index.lucene.analysis.**
--keep class org.crosswire.jsword.book.sword.SwordBookDriver
--keep class org.crosswire.jsword.index.lucene.LuceneIndexManager
--keep class org.crosswire.jsword.index.lucene.LuceneQueryBuilder
--keep class org.crosswire.jsword.index.lucene.LuceneQueryDecorator
--keep class org.crosswire.jsword.index.lucene.LuceneSearcher
--keep class org.crosswire.jsword.book.filter.**
+-keep class org.crosswire.jsword.** { *; }
+-keep class net.bible.service.sword.** { *; }
 
 # This class has a number of dynamic invocation so let's not
 # touch it
@@ -83,7 +77,58 @@
     *;
 }
 
-#We need these in order to support Kotlin reflection (used at least in SpeakWidgets.kt)
-#-keepattributes *Annotation*
-#-keep class kotlin.** { *; }
-#-keep class org.jetbrains.** { *; }
+# We need these in order to support Kotlin reflection (used at least in SpeakWidgets.kt)
+-keepattributes *Annotation*
+-keep class kotlin.** { *; }
+-keep class org.jetbrains.** { *; }
+
+
+
+# [custom rules begin]
+-verbose
+-renamesourcefileattribute SourceFile
+
+-keepattributes Exceptions,InnerClasses,Signature,Deprecated,SourceFile,LineNumberTable,*Annotation*,EnclosingMethod,AnnotationDefault,JavascriptInterface
+-keepattributes RuntimeVisibleAnnotations
+-keepattributes RuntimeInvisibleAnnotations
+-keepattributes RuntimeVisibleParameterAnnotations
+-keepattributes RuntimeInvisibleParameterAnnotations
+
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+-keepclasseswithmembers class * {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+
+-keepclasseswithmembers class * {
+    public <init>(android.content.Context, android.util.AttributeSet, int);
+}
+
+-keepclassmembers class * extends android.content.Context {
+   public void *(android.view.View);
+   public void *(android.view.MenuItem);
+}
+
+-keep class com.google.** { *; }
+-dontwarn com.google.**
+-dontwarn com.squareup.picasso.**
+-dontwarn com.viewpagerindicator.**
+
+-keepclasseswithmembernames class * {
+  native <methods>;
+}
+
+# Parcelable implementations are accessed by introspection
+-keepclassmembers class * implements android.os.Parcelable {*;}
+-keep class * implements android.os.Parcelable {*;}
+-keepnames class * implements android.os.Parcelable {*;}
+
+-keep @JvmOverloads class * {
+  <init>(...);
+  *;
+}
+
+# [custom rules end]

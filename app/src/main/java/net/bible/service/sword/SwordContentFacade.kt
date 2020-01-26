@@ -18,6 +18,7 @@
 package net.bible.service.sword
 
 import android.util.Log
+import androidx.annotation.Keep
 import net.bible.android.BibleApplication.Companion.application
 import net.bible.android.activity.R
 import net.bible.android.control.ApplicationScope
@@ -72,6 +73,7 @@ import javax.xml.parsers.SAXParser
  *
  * @author Martin Denham [mjdenham at gmail dot com]
  */
+@Keep
 @ApplicationScope
 open class SwordContentFacade @Inject constructor(
     private val bookmarkFormatSupport: BookmarkFormatSupport,
