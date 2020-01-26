@@ -53,6 +53,7 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.children
 import androidx.drawerlayout.widget.DrawerLayout
+import com.fulldive.eventsender.lib.EventSender
 import kotlinx.android.synthetic.main.main_bible_view.*
 import net.bible.android.BibleApplication
 import net.bible.android.activity.R
@@ -1126,7 +1127,10 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
                 documentControl.checkIfAnyPageDocumentsDeleted()
                 return
             }
-            else -> throw RuntimeException("Unhandled request code $requestCode")
+            else -> {
+                Log.d(TAG, "Unhandled request code $requestCode")
+//                throw RuntimeException("Unhandled request code $requestCode")
+            }
         }
         super.onActivityResult(requestCode, resultCode, data)
         when {
@@ -1261,6 +1265,16 @@ class MainBibleActivity : CustomTitlebarActivityBase(), VerseActionModeMediator.
         if (documentViewManager.documentView.isPagePreviousOkay) {
             windowControl.activeWindowPageManager.currentPage.previous()
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        EventSender.getInstance(applicationContext).onStart(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        EventSender.getInstance(applicationContext).onStop(this)
     }
 
 
